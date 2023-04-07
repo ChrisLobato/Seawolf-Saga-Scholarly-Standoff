@@ -4,8 +4,10 @@ import AABB from "../../Wolfie2D/DataTypes/Shapes/AABB";
 import Vec2 from "../../Wolfie2D/DataTypes/Vec2";
 import GameEvent from "../../Wolfie2D/Events/GameEvent";
 import GameNode from "../../Wolfie2D/Nodes/GameNode";
+import Graphic from "../../Wolfie2D/Nodes/Graphic";
 import { GraphicType } from "../../Wolfie2D/Nodes/Graphics/GraphicTypes";
 import Line from "../../Wolfie2D/Nodes/Graphics/Line";
+import Rect from "../../Wolfie2D/Nodes/Graphics/Rect";
 import OrthogonalTilemap from "../../Wolfie2D/Nodes/Tilemaps/OrthogonalTilemap";
 import Navmesh from "../../Wolfie2D/Pathfinding/Navmesh";
 import DirectStrategy from "../../Wolfie2D/Pathfinding/Strategies/DirectStrategy";
@@ -62,6 +64,8 @@ export default class MainHW4Scene extends HW4Scene {
 
     // The position graph for the navmesh
     private graph: PositionGraph;
+
+    private attackMarker: Graphic;
 
     public constructor(viewport: Viewport, sceneManager: SceneManager, renderingManager: RenderingManager, options: Record<string, any>) {
         super(viewport, sceneManager, renderingManager, options);
@@ -134,6 +138,7 @@ export default class MainHW4Scene extends HW4Scene {
         this.receiver.subscribe("enemyDied");
         this.receiver.subscribe(ItemEvent.ITEM_REQUEST);
         this.receiver.subscribe(PlayerEvent.PLAYER_ATTACKED);
+        this.receiver.subscribe(PlayerEvent.ATTACK_OVER);
 
         // Add a UI for health
         this.addUILayer("health");
@@ -162,7 +167,22 @@ export default class MainHW4Scene extends HW4Scene {
         switch (event.type) {
             case PlayerEvent.PLAYER_ATTACKED: {
                 this.handleAttack(event.data.get("player"), event.data.get("controller"));
+                break;
             }
+            case PlayerEvent.ATTACK_OVER: {
+                this.handleAttackOver();
+                break;
+            }
+            /*
+            case PlayerEvent.PLAYER_DODGED: {
+                this.handleDodge();
+                break;
+            }
+            case PlayerEvent.DODGE_OVER: {
+                this.handleDodgeOver();
+                break;
+            }
+            */
             case BattlerEvent.BATTLER_KILLED: {
                 this.handleBattlerKilled(event);
                 break;
@@ -180,11 +200,11 @@ export default class MainHW4Scene extends HW4Scene {
         }
     }
 
-    protected handleAttack(player: PlayerActor, controller: PlayerController){
+    protected handleAttack(player: PlayerActor, controller: PlayerController): void {
         // console.log('attack in main at', player.position.toString(), 'facing', controller.faceDir.toString());
         
         // REVISIT random values for testing
-        let attackWidth = 10;
+        let attackWidth = 20;
         let attackLength = 20;
         let distanceMultiplier = 10; 
 
@@ -198,6 +218,10 @@ export default class MainHW4Scene extends HW4Scene {
         
         damageSource.x += dir.x * distanceMultiplier;
         damageSource.y += dir.y * distanceMultiplier;
+
+        this.attackMarker = <Rect>this.add.graphic(GraphicType.RECT, "primary", { position: damageSource, size: new Vec2(20, 20)});
+        this.attackMarker.color = new Color(255, 0, 255, .20);
+        this.attackMarker.visible = true;
 
 
         // can probably use a shape, this is really just a test implimentation
@@ -217,6 +241,11 @@ export default class MainHW4Scene extends HW4Scene {
                 
             }
         }
+    }
+
+    protected handleAttackOver(): void {
+        console.log("ATTACK OVER");
+        this.attackMarker.visible = false;
     }
 
     protected handleItemRequest(node: GameNode, inventory: Inventory): void {
