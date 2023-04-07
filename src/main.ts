@@ -18,6 +18,8 @@ import { PlayerInput } from "./hw4/AI/Player/PlayerController";
             {name: PlayerInput.MOVE_RIGHT, keys: ["d"]},
             {name: PlayerInput.PICKUP_ITEM, keys: ["e"]},
             {name: PlayerInput.DROP_ITEM, keys: ["q"]},
+            {name: PlayerInput.ATTACKING, keys: ["x"]},
+            {name: PlayerInput.DODGING, keys: ["c"]},
             {name: "slot1", keys: ["1"]},
             {name: "slot2", keys: ["2"]},
         ],
