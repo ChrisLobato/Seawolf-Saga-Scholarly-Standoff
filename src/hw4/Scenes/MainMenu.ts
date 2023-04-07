@@ -12,42 +12,74 @@ import GuardDemoScene from "./GuardDemoScene";
 export default class MainMenu extends Scene {
     // Layers, for multiple main menu screens
     private mainMenu: Layer;
+    private background: Layer;
     private about: Layer;
     private control: Layer;
 
-    public loadScene(){}
+    public loadScene(){
+        this.load.image("MainMenu", "hw4_assets/sprites/MainMenu.png");
+        this.load.image("logo", "hw4_assets/sprites/TransparentLogo.png");
+
+    }
 
     public startScene(){
         const center = this.viewport.getCenter();
-
+        let size = this.viewport.getHalfSize();
+        this.viewport.setFocus(size);
+        this.viewport.setZoomLevel(1);
+        
         // The main menu
         this.mainMenu = this.addUILayer("mainMenu");
+        this.background = this.addUILayer("background");
+        this.background.setDepth(0);
+        this.mainMenu.setDepth(1)
+        let backgroundSprite = this.add.sprite("MainMenu", "background");
+        let logo = this.add.sprite("logo","background");
+        backgroundSprite.positionX = center.x;
+        backgroundSprite.positionY = center.y;
+        backgroundSprite.scale.set(.77,.77)
+        logo.positionX = center.x;
+        logo.positionY = center.y-420;
+        logo.scale.set(.75,.75)
+        
+
 
         const play = this.add.uiElement(UIElementType.BUTTON, "mainMenu", {position: new Vec2(center.x, center.y - 100), text: "Play"});
         play.size.set(200, 50);
         play.borderWidth = 2;
-        play.borderColor = Color.WHITE;
-        play.backgroundColor = Color.TRANSPARENT;
+        play.borderColor = Color.BLACK;
+        play.backgroundColor = Color.BLACK;
         play.onClickEventId = "play";
 
-        const astar = this.add.uiElement(UIElementType.BUTTON, "mainMenu", {position: new Vec2(center.x, center.y), text: "A* Test Scene"});
-        astar.size.set(200, 50);
-        astar.borderWidth = 2;
-        astar.borderColor = Color.WHITE;
-        astar.backgroundColor = Color.TRANSPARENT;
-        astar.onClickEventId = "astar";
+        const levels = this.add.uiElement(UIElementType.BUTTON, "mainMenu", {position: new Vec2(center.x, center.y), text: "Level Select"});
+        levels.size.set(200, 50);
+        levels.borderWidth = 2;
+        levels.borderColor = Color.BLACK;
+        levels.backgroundColor =Color.BLACK;
+        levels.onClickEventId = "level select";
 
-        const guard = this.add.uiElement(UIElementType.BUTTON, "mainMenu", {position: new Vec2(center.x, center.y + 100), text: "Guard demo"});
-        guard.size.set(200, 50);
-        guard.borderWidth = 2;
-        guard.borderColor = Color.WHITE;
-        guard.backgroundColor = Color.TRANSPARENT;
-        guard.onClickEventId = "guard";
+        const controlsButton = this.add.uiElement(UIElementType.BUTTON, "mainMenu", {position: new Vec2(center.x, center.y + 100), text: "Controls"});
+        controlsButton.size.set(200,50);
+        controlsButton.borderWidth = 2;
+        controlsButton.borderColor = Color.BLACK;
+        controlsButton.backgroundColor = Color.BLACK;
+        controlsButton.onClickEventId = "controls";
+
+        const help = this.add.uiElement(UIElementType.BUTTON, "mainMenu", {position: new Vec2(center.x, center.y + 200), text: "Help"});
+        help.size.set(200, 50);
+        help.borderWidth = 2;
+        help.borderColor = Color.BLACK;
+        help.backgroundColor = Color.BLACK;
+        help.onClickEventId = "help";
 
         // Subscribe to the button events
         this.receiver.subscribe("play");
-        this.receiver.subscribe("astar");
-        this.receiver.subscribe("guard");
+        this.receiver.subscribe("level select");
+        this.receiver.subscribe("controls");
+        this.receiver.subscribe("help");
+
+        
+        
     }
 
     public updateScene(){
@@ -62,11 +94,11 @@ export default class MainMenu extends Scene {
                 this.sceneManager.changeToScene(MainHW4Scene);
                 break;
             }
-            case "astar": {
+            case "level select": {
                 this.sceneManager.changeToScene(AstarDemoScene);
                 break;
             }
-            case "guard": {
+            case "level select": {
                 this.sceneManager.changeToScene(GuardDemoScene);
                 break;
             }
