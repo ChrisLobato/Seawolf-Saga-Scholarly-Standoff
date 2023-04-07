@@ -183,42 +183,23 @@ export default class MainHW4Scene extends HW4Scene {
     protected handleAttack(player: PlayerActor, controller: PlayerController){
         // console.log('attack in main at', player.position.toString(), 'facing', controller.faceDir.toString());
         
-        // basic 4 direction attack, can augment to do multiple, just doing 4 for now
-        // probably 8 would be enough
-        // REVISIT we can edit these values as we see fit
+        // REVISIT random values for testing
         let attackWidth = 10;
         let attackLength = 20;
-
-        let dir = controller.faceDir;
+        let distanceMultiplier = 10; 
 
         // making sure player position is unchanged
         let damageSource: Vec2 = Vec2.ZERO;
         damageSource.x = player.position.x;
         damageSource.y = player.position.y;
 
-        // going vertically or horizontally
-        let vertical = Math.abs(dir.y);
-        let horizontal = Math.abs(dir.x);
+        // shifting the damage box over to the direction that is being faced
+        let dir = controller.faceDir;
+        
+        damageSource.x += dir.x * distanceMultiplier;
+        damageSource.y += dir.y * distanceMultiplier;
 
-        if(vertical > horizontal){
-            // going up or down
-            if(dir.y < 0) {
-                damageSource.y -= 20;
-            }
-            else {
-                damageSource.y += 20;
-            }
 
-        }
-        else {
-            // going left or right 
-            if(dir.x < 0) {
-                damageSource.x -= 20;
-            }
-            else {
-                damageSource.x += 20;
-            }
-        }
         // can probably use a shape, this is really just a test implimentation
         let left = damageSource.x - attackWidth;
         let right = damageSource.x + attackWidth;
