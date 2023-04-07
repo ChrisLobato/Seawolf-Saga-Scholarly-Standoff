@@ -7,7 +7,7 @@ import PlayerState from "./PlayerState";
 export default class Attacking extends PlayerState {
     
     public override onEnter(options: Record<string, any>): void {
-        this.emitter.fireEvent(PlayerEvent.PLAYER_ATTACKED, {});
+        this.emitter.fireEvent(PlayerEvent.PLAYER_ATTACKED, {player: this.parent.owner, controller: this.parent.controller});
     }
 
     public override handleInput(event: GameEvent): void { 
