@@ -20,6 +20,7 @@ import PlayerActor from "../Actors/PlayerActor";
 import GuardBehavior from "../AI/NPC/NPCBehavior/GaurdBehavior";
 import HealerBehavior from "../AI/NPC/NPCBehavior/HealerBehavior";
 import PlayerAI from "../AI/Player/PlayerAI";
+import PlayerController from "../AI/Player/PlayerController";
 import { ItemEvent, PlayerEvent, BattlerEvent } from "../Events";
 import Battler from "../GameSystems/BattleSystem/Battler";
 import BattlerBase from "../GameSystems/BattleSystem/BattlerBase";
@@ -132,6 +133,7 @@ export default class MainHW4Scene extends HW4Scene {
         this.receiver.subscribe("healthpack");
         this.receiver.subscribe("enemyDied");
         this.receiver.subscribe(ItemEvent.ITEM_REQUEST);
+        this.receiver.subscribe(PlayerEvent.PLAYER_ATTACKED);
 
         // Add a UI for health
         this.addUILayer("health");
@@ -158,6 +160,9 @@ export default class MainHW4Scene extends HW4Scene {
      */
     public handleEvent(event: GameEvent): void {
         switch (event.type) {
+            case PlayerEvent.PLAYER_ATTACKED: {
+                this.handleAttack(event.data.get("player"), event.data.get("controller"));
+            }
             case BattlerEvent.BATTLER_KILLED: {
                 this.handleBattlerKilled(event);
                 break;
@@ -171,6 +176,64 @@ export default class MainHW4Scene extends HW4Scene {
             }
             default: {
                 throw new Error(`Unhandled event type "${event.type}" caught in HW3Scene event handler`);
+            }
+        }
+    }
+
+    protected handleAttack(player: PlayerActor, controller: PlayerController){
+        // console.log('attack in main at', player.position.toString(), 'facing', controller.faceDir.toString());
+        
+        // basic 4 direction attack, can augment to do multiple, just doing 4 for now
+        // probably 8 would be enough
+        // REVISIT we can edit these values as we see fit
+        let attackWidth = 10;
+        let attackLength = 20;
+
+        let dir = controller.faceDir;
+
+        // making sure player position is unchanged
+        let damageSource: Vec2 = Vec2.ZERO;
+        damageSource.x = player.position.x;
+        damageSource.y = player.position.y;
+
+        // going vertically or horizontally
+        let vertical = Math.abs(dir.y);
+        let horizontal = Math.abs(dir.x);
+
+        if(vertical > horizontal){
+            // going up or down
+            if(dir.y < 0) {
+                damageSource.y -= 20;
+            }
+            else {
+                damageSource.y += 20;
+            }
+
+        }
+        else {
+            // going left or right 
+            if(dir.x < 0) {
+                damageSource.x -= 20;
+            }
+            else {
+                damageSource.x += 20;
+            }
+        }
+        // can probably use a shape, this is really just a test implimentation
+        let left = damageSource.x - attackWidth;
+        let right = damageSource.x + attackWidth;
+        let top = damageSource.y - attackLength;
+        let bottom = damageSource.y + attackLength;
+        for(let i = 0; i < this.battlers.length; i++){
+            if(this.battlers[i].position.x < right &&
+                this.battlers[i].position.x > left &&
+                this.battlers[i].position.y > top &&
+                this.battlers[i].position.y < bottom){
+                if(this.battlers[i].id != player.id){ // prevents the player from hitting themselves
+                    console.log("this battler was hit:", this.battlers[i].id); 
+                    // DEAL DAMAGE TO THIS PLAYER!
+                }
+                
             }
         }
     }
