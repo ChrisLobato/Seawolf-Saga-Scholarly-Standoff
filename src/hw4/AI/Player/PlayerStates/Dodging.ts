@@ -7,7 +7,7 @@ import PlayerState from "./PlayerState";
 export default class Dodging extends PlayerState {
     
     public override onEnter(options: Record<string, any>): void {
-        this.emitter.fireEvent(PlayerEvent.PLAYER_DODGED, {});
+        this.emitter.fireEvent(PlayerEvent.PLAYER_DODGED, {owner: this.parent.owner});
     }
 
     public override handleInput(event: GameEvent): void { 

@@ -24,20 +24,24 @@ export default abstract class PlayerState extends State {
     protected owner: PlayerActor;
     protected receiver: Receiver;
 
+    protected dodgeCharges: number;
+
     public constructor(parent: PlayerAI, owner: PlayerActor) {
         super(parent);
         this.owner = owner;
-        // this.receiver = new Receiver();
-        // this.receiver.subscribe(PlayerEvent.PLAYER_DODGED);
+        this.dodgeCharges = 3;
     }
 
     public override onEnter(options: Record<string, any>): void {}
     public override onExit(): Record<string, any> { return {}; }
     public override update(deltaT: number): void {
-
-        //while (this.receiver.hasNextEvent()) {
-        //    this.handleInput(this.receiver.getNextEvent());
-        //}
+        
+        // update by a tiny bit every update, using deltaT to account for fps differences
+        // Can modify deltaT with rechargeModifier to make recharging faster or slower
+        let rechargeModifier = 1;
+        this.dodgeCharges = this.dodgeCharges + ( deltaT * rechargeModifier );
+        if(this.dodgeCharges > 3)
+            this.dodgeCharges = 3;
 
         // Adjust the angle the player is facing 
         this.parent.owner.rotation = this.parent.controller.rotation;
@@ -59,7 +63,10 @@ export default abstract class PlayerState extends State {
 
         }
 
-        if(this.parent.controller.dodging){
+        if(this.parent.controller.dodging && this.dodgeCharges > 1){
+            // subtract a dodge charge
+            this.dodgeCharges = this.dodgeCharges - 1;
+
             let vec: Vec2 = Vec2.ZERO;
             vec = this.owner.position.vecTo(Input.getGlobalMousePosition());
             // limitting the range
@@ -73,6 +80,7 @@ export default abstract class PlayerState extends State {
             else if(vec.y < -limitter)
                 vec.y = -limitter;
             this.parent.owner.move(vec);
+            
         }
 
     }
