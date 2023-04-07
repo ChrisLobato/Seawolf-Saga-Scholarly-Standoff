@@ -55,7 +55,15 @@ export default abstract class NPCAction extends GoapAction {
     }
 
     public update(deltaT: number): void {
-        // TODO get the NPCs to move on their paths
+        if (this.target !== null && this.path !== null && !this.path.isDone()) {
+            if (this.actor.atTarget()) {
+                this.performAction(this.target);
+            } else {
+                this.actor.moveOnPath(this.actor.speed*deltaT*10, this.path)
+            }
+        } else {
+            this.finished();
+        }
     }
 
     public abstract performAction(target: TargetableEntity): void;

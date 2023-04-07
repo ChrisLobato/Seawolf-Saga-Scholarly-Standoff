@@ -33,7 +33,7 @@ import HW4Scene from "./HW4Scene";
 export default class GuardDemoScene extends HW4Scene {
 
     private player: PlayerActor;
-    /** All the battlers in the HW4Scene (including the player) */
+    /** All the battlers in the HW3Scene (including the player) */
     private battlers: (Battler & Actor)[];
     /** Healthbars for the battlers */
     private healthbars: Map<number, HealthbarHUD>;
@@ -71,7 +71,7 @@ export default class GuardDemoScene extends HW4Scene {
         this.load.spritesheet("RedHealer", "hw4_assets/spritesheets/RedHealer.json");
 
         // Load the tilemap
-        this.load.tilemap("level", "hw4_assets/tilemaps/HW4Tilemap.json");
+        this.load.tilemap("level", "hw4_assets/tilemaps/HW3Tilemap.json");
 
         // Load the enemy locations
         this.load.object("red", "hw4_assets/data/enemies/red.json");
@@ -152,7 +152,7 @@ export default class GuardDemoScene extends HW4Scene {
                 break;
             }
             default: {
-                throw new Error(`Unhandled event type "${event.type}" caught in HW4Scene event handler`);
+                throw new Error(`Unhandled event type "${event.type}" caught in HW3Scene event handler`);
             }
         }
     }
@@ -263,7 +263,7 @@ export default class GuardDemoScene extends HW4Scene {
         }
     }
     /**
-     * Initializes the navmesh graph used by the NPCs in the HW4Scene. This method is a little buggy, and
+     * Initializes the navmesh graph used by the NPCs in the HW3Scene. This method is a little buggy, and
      * and it skips over some of the positions on the tilemap. If you can fix my navmesh generation algorithm,
      * go for it.
      * 

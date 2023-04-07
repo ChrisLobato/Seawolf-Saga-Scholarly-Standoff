@@ -24,7 +24,7 @@ export default class AStarDemoScene extends Scene {
     protected path: NavigationPath;
 
     public loadScene(): void {
-        this.load.tilemap("level", "hw4_assets/tilemaps/HW4Tilemap.json");
+        this.load.tilemap("level", "hw4_assets/tilemaps/HW3Tilemap.json");
         this.load.spritesheet("BlueEnemy", "hw4_assets/spritesheets/BlueEnemy.json");
     }
 
@@ -43,9 +43,8 @@ export default class AStarDemoScene extends Scene {
         // Register the different pathfinding strategies with the navmesh
         navmesh.registerStrategy("direct", new DirectStrategy(navmesh));
         navmesh.registerStrategy("astar", new AstarStrategy(navmesh));
-        
-        // TODO Set the navigation strategy to be A*
-        navmesh.setStrategy("direct");
+        // Set the navigation strategy to be A*
+        navmesh.setStrategy("astar");
 
         // Create a dummy NPC
         this.npc = this.add.animatedSprite(NPCActor, "BlueEnemy", "primary")
@@ -68,7 +67,7 @@ export default class AStarDemoScene extends Scene {
     }
     
     /**
-     * Initializes the navmesh graph used by the NPCs in the HW4Scene. This method is a little buggy, and
+     * Initializes the navmesh graph used by the NPCs in the HW3Scene. This method is a little buggy, and
      * and it skips over some of the positions on the tilemap. If you can fix my navmesh generation algorithm,
      * go for it.
      * @author PeteyLumpkins

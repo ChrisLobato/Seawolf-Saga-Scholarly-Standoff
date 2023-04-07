@@ -16,6 +16,8 @@ In this assignment, you will make a simple top-down game using the Typescript pr
 - How to construct a path using a heuristic algorithm (A*)
 - How to create GOAP actions and behavior in Wolfid2d
 
+> In lots of places in the code, it will say `hw3` instead of `hw4`. At the start of the semester, we swapped the original order of the third and fourth homework assignments. I hope it's not too confusing.
+
 ## How To Play
 There is not much of a "game" to be played in this assignment. When you hit the "play" button, you will assume control of the player in the top-left corner of the map. You can move the player around with WASD, but that's about it. 
 
@@ -34,7 +36,7 @@ The directory structure of the homework codebase looks similar to the tree diagr
 ├── package-lock.json
 ├── package.json
 ├── src
-│   ├── hw4
+│   ├── hw3
 │   │   ├── AI
 │   │   │   ├── NPC
 │   │   │   │   ├── NPCActions
@@ -83,8 +85,8 @@ The directory structure of the homework codebase looks similar to the tree diagr
 │   │   │   ├── Searching
 │   │   │   │   ├── BasicFinder.ts
 │   │   │   │   ├── Finder.ts
-│   │   │   │   ├── HW4Filters.ts
-│   │   │   │   └── HW4Reducers.ts
+│   │   │   │   ├── HW3Filters.ts
+│   │   │   │   └── HW3Reducers.ts
 │   │   │   └── Targeting
 │   │   │       ├── BasicTargetable.ts
 │   │   │       ├── BasicTargeting.ts
@@ -97,8 +99,8 @@ The directory structure of the homework codebase looks similar to the tree diagr
 │   │       ├── AstarDemoScene.ts
 │   │       ├── GameOver.ts
 │   │       ├── GuardDemoScene.ts
-│   │       ├── HW4Scene.ts
-│   │       ├── MainHW4Scene.ts
+│   │       ├── HW3Scene.ts
+│   │       ├── MainHW3Scene.ts
 │   │       └── MainMenu.ts
 │   ├── index.d.ts
 │   ├── index.html
@@ -153,7 +155,7 @@ For this assignment, I have adapted Wolfie2d's navigation system to support diff
 You can swap the strategy you use for pathfinding out in the `initializeNavmesh()` method.
 
 ```typescript
-export default class MainHW4Scene extends HW4Scene {
+export default class MainHW3Scene extends HW3Scene {
 
     protected initializeNavmesh(): void {
         // Create the graph

@@ -17,7 +17,7 @@ import Timer from "../../Wolfie2D/Timing/Timer";
 
 export default class NPCActor extends AnimatedSprite implements Battler, TargetingEntity {
 
-    /** Override the type of the scene to be the HW4 scene */
+    /** Override the type of the scene to be the HW3 scene */
     protected scene: HW4Scene
 
     // An invincible timer for our NPCs

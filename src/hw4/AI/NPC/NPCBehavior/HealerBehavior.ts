@@ -15,6 +15,43 @@ import { HasItem } from "../NPCStatuses/HasItem";
 import FalseStatus from "../NPCStatuses/FalseStatus";
 import Battler from "../../../GameSystems/BattleSystem/Battler";
 
+enum HealerStatuses {
+
+    AT_HPACK = "at-hpack",
+
+    AT_ALLY = "at-ally",
+
+    HPACK_EXISTS = "hpack-exists",
+
+    ALLY_EXISTS = "ally-exists",
+
+    ALLY_TARGETED = "ally-targeted",
+
+    HEALTHPACK_TARGETED = "healthpack-targeted",
+
+    HAS_HPACK = "has-hpack",
+
+    GOAL = "goal"
+
+}
+
+enum HealerActions {
+
+    GOTO_HPACk = "goto-hpack",
+
+    PICKUP_HPACK = "pickup-hpack",
+
+    GOTO_ALLY = "goto-ally",
+
+    USE_HPACK = "use-hpack",
+
+    IDLE = "idle",
+
+    TARGET_ALLY = "target-ally",
+
+    TARGET_HEALTHPACK = "target-healthpack",
+}
+
 
 /**
  * When an NPC is acting as a healer, their goal is to try and heal it's teammates by running around, picking up healthpacks, 
@@ -47,9 +84,27 @@ export default class HealerBehavior extends NPCBehavior  {
         
         /* ######### Add all healer actions ######## */
 
-        // TODO configure the rest of the healer actions
+        // An action for picking up a healthpack
+        let pickupHealthpack = new PickupItem(this, this.owner);
+        pickupHealthpack.targets = scene.getHealthpacks()
+        pickupHealthpack.targetFinder = new BasicFinder<Item>(ClosestPositioned(owner), ItemFilter(Healthpack), VisibleItemFilter());
+        pickupHealthpack.addPrecondition(HealerStatuses.HPACK_EXISTS);
+        pickupHealthpack.addEffect(HealerStatuses.HAS_HPACK);
+        pickupHealthpack.cost = 5;
+        this.addState(HealerActions.PICKUP_HPACK, pickupHealthpack);
 
-        // Idle action
+        // An action for using a healthpack on an ally
+        let healAlly = new UseHealthpack(this, this.owner);
+        healAlly.targets = scene.getBattlers();
+        healAlly.targetFinder = new BasicFinder<Battler>(ClosestPositioned(owner), BattlerActiveFilter(), BattlerGroupFilter([owner.battleGroup]), BattlerHealthFilter(0, 5));
+        healAlly.addPrecondition(HealerStatuses.HAS_HPACK);
+        healAlly.addEffect(HealerStatuses.GOAL);
+        healAlly.cost = 5;
+        this.addState(HealerActions.USE_HPACK, healAlly);
+
+        // An action for the healer to try and heal itself
+
+        // Idle
         let idle = new Idle(this, this.owner);
         idle.addEffect(HealerStatuses.GOAL);
         idle.cost = 100;
@@ -75,32 +130,4 @@ export default class HealerBehavior extends NPCBehavior  {
     }
 
 }
-
-// World states for the healer
-const HealerStatuses = {
-
-    // Whether or not a healthpack exists in the world
-    HPACK_EXISTS: "hpack-exists",
-
-    // Whether the healer has a healthpack in their inventory or not
-    ALLY_EXISTS: "ally-exists",
-
-    // Whether the healer has any allies in the game world or not
-    HAS_HPACK: "has-hpack",
-
-    // Whether the healer has reached it's goal or not
-    GOAL: "goal"
-
-} as const
-
-// Healer actions
-const HealerActions = {
-
-    PICKUP_HPACK: "pickup-hpack",
-
-    USE_HPACK: "use-hpack",
-
-    IDLE: "idle",
-
-} as const;
 

@@ -4,7 +4,7 @@ import { BattlerEvent, ItemEvent } from "../Events";
 import BasicBattler from "../GameSystems/BattleSystem/BasicBattler";
 import Battler from "../GameSystems/BattleSystem/Battler";
 import Inventory from "../GameSystems/ItemSystem/Inventory";
-import HW4Item from "../GameSystems/ItemSystem/Item";
+import HW3Item from "../GameSystems/ItemSystem/Item";
 import BasicTargetable from "../GameSystems/Targeting/BasicTargetable";
 import { TargetableEntity } from "../GameSystems/Targeting/TargetableEntity";
 import { TargetingEntity } from "../GameSystems/Targeting/TargetingEntity";
@@ -13,14 +13,14 @@ import HW4Scene from "../Scenes/HW4Scene";
 
 export default class PlayerActor extends AnimatedSprite implements Battler {
 
-    /** Override the type of the scene to be the HW4 scene */
+    /** Override the type of the scene to be the HW3 scene */
     protected scene: HW4Scene
 
     /** Give the player a battler compoonent */
     protected battler: Battler;
     protected targetable: TargetableEntity;
 
-    protected heldItem: HW4Item;
+    protected heldItem: HW3Item;
 
     constructor(sheet: Spritesheet) {
         super(sheet);
