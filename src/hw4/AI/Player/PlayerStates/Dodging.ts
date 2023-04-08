@@ -1,19 +1,18 @@
 import Vec2 from "../../../../Wolfie2D/DataTypes/Vec2";
 import GameEvent from "../../../../Wolfie2D/Events/GameEvent";
+import { PlayerEvent } from "../../../Events";
 import { PlayerStateType } from "./PlayerState";
 import PlayerState from "./PlayerState";
-import {  PlayerEvent } from "../../../Events"
 
-export default class Moving extends PlayerState {
+export default class Dodging extends PlayerState {
     
     public override onEnter(options: Record<string, any>): void {
-        
+        this.emitter.fireEvent(PlayerEvent.PLAYER_DODGED, {owner: this.parent.owner});
     }
 
     public override handleInput(event: GameEvent): void { 
         switch(event.type) {
             default: {
-                console.log("event type:", event.type);
                 super.handleInput(event);
             }
         }
@@ -21,14 +20,12 @@ export default class Moving extends PlayerState {
 
     public override update(deltaT: number): void {
         super.update(deltaT);
+        // when the dodge is done
         if (this.parent.controller.moveDir.equals(Vec2.ZERO)) {
             this.finished(PlayerStateType.IDLE);
         }
-        else if (this.parent.controller.attacking) {
-            this.finished(PlayerStateType.ATTACKING);
-        }
-        else if (this.parent.controller.dodging) {
-            this.finished(PlayerStateType.DODGING);
+        else{
+            this.finished(PlayerStateType.MOVING);
         }
     }
 

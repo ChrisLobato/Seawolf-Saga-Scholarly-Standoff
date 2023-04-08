@@ -22,5 +22,9 @@ export enum HudEvent {
 }
 
 export enum PlayerEvent {
-    PLAYER_KILLED = "PLAYER_KILLED"
+    PLAYER_KILLED = "PLAYER_KILLED",
+    PLAYER_DODGED = "PLAYER_DODGED",
+    DODGE_OVER = "DODGE_OVER",
+    PLAYER_ATTACKED = "PLAYER_ATTACKED",
+    ATTACK_OVER = "ATTACK_OVER"
 }

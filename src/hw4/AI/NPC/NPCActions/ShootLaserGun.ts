@@ -24,7 +24,7 @@ export default class ShootLaserGun extends NPCAction {
     }
 
     public performAction(target: TargetableEntity): void {
-        this.timer.isStopped() ? console.log("Weapon cooling down!") : console.log("Weapon ready!");
+        //this.timer.isStopped() ? console.log("Weapon cooling down!") : console.log("Weapon ready!");
         // If the lasergun is not null and the lasergun is still in the actors inventory; shoot the lasergun
         if (this.timer.isStopped() && this.lasergun !== null && this.lasergun.inventory !== null && this.lasergun.inventory.id === this.actor.inventory.id) {
             // Set the start, direction, and end position to shoot the laser gun
