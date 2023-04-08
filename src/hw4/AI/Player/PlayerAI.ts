@@ -8,7 +8,7 @@ import { ItemEvent, PlayerEvent } from "../../Events";
 import Inventory from "../../GameSystems/ItemSystem/Inventory";
 import Item from "../../GameSystems/ItemSystem/Item";
 import PlayerController from "./PlayerController";
-import { Idle, Invincible, Moving, Attacking, Dodging, Dead, PlayerStateType } from "./PlayerStates/PlayerState";
+import { Idle, Invincible, Moving, Attacking, HeavyAttacking, Dodging, Dead, PlayerStateType } from "./PlayerStates/PlayerState";
 
 /**
  * The AI that controls the player. The players AI has been configured as a Finite State Machine (FSM)
@@ -34,11 +34,12 @@ export default class PlayerAI extends StateMachineAI implements AI {
         this.addState(PlayerStateType.INVINCIBLE, new Invincible(this, this.owner));
         this.addState(PlayerStateType.MOVING, new Moving(this, this.owner));
         this.addState(PlayerStateType.ATTACKING, new Attacking(this, this.owner));
+        this.addState(PlayerStateType.HEAVY_ATTACKING, new HeavyAttacking(this, this.owner));
         this.addState(PlayerStateType.DODGING, new Dodging(this, this.owner));
         this.addState(PlayerStateType.DEAD, new Dead(this, this.owner));
 
-        this.receiver.subscribe(PlayerEvent.PLAYER_DODGED);
-        this.receiver.subscribe(PlayerEvent.PLAYER_ATTACKED);
+        // this.receiver.subscribe(PlayerEvent.PLAYER_DODGED);
+        // this.receiver.subscribe(PlayerEvent.PLAYER_ATTACKED);
         
         // Initialize the players state to Idle
         this.initialize(PlayerStateType.IDLE);
@@ -58,6 +59,7 @@ export default class PlayerAI extends StateMachineAI implements AI {
                 this.handleLaserFiredEvent(event.data.get("actorId"), event.data.get("to"), event.data.get("from"));
                 break;
             }
+            /*
             case PlayerEvent.PLAYER_DODGED: {
                 this.handleDodge();
                 break;
@@ -66,6 +68,7 @@ export default class PlayerAI extends StateMachineAI implements AI {
                 this.handleAttack();
                 break;
             }
+            */
             default: {
                 super.handleEvent(event);
                 break;
@@ -81,6 +84,7 @@ export default class PlayerAI extends StateMachineAI implements AI {
         }
     }
 
+    /*
     protected handleDodge(): void {
         console.log("DODGE");
         // let dir: Vec2 = Vec2.ZERO;
@@ -105,5 +109,6 @@ export default class PlayerAI extends StateMachineAI implements AI {
     protected handleAttack(): void {
         console.log("ATTACK");
     }
+    */
     
 }

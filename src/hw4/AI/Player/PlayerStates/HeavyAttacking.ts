@@ -5,16 +5,16 @@ import { PlayerEvent } from "../../../Events";
 import { PlayerStateType } from "./PlayerState";
 import PlayerState from "./PlayerState";
 
-export default class Attacking extends PlayerState {
+export default class HeavyAttacking extends PlayerState {
 
     private attackTimer: Timer;
     
     public override onEnter(options: Record<string, any>): void {
-        console.log("light");
+        console.log("heavy");
         this.emitter.fireEvent(PlayerEvent.PLAYER_ATTACKED, {player: this.parent.owner, controller: this.parent.controller,
-        type: "light"});
+        type: "heavy"});
         // REVISIT set the timer to match the length of the animation
-        this.attackTimer = new Timer(500, this.attackOver);
+        this.attackTimer = new Timer(1250, this.attackOver);
         this.attackTimer.start();
     }
 

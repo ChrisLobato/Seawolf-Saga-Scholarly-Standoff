@@ -10,7 +10,6 @@ export enum PlayerInput {
     MOVE_DOWN = "MOVE_DOWN",
     MOVE_LEFT = "MOVE_LEFT",
     MOVE_RIGHT = "MOVE_RIGHT",
-    ATTACKING = "ATTACKING",
     DODGING = "DODGING",
     PICKUP_ITEM = "PICKUP_ITEM",
     DROP_ITEM = "DROP_ITEM"
@@ -72,7 +71,9 @@ export default class PlayerController {
      */
     public get dropping(): boolean { return Input.isJustPressed(PlayerInput.DROP_ITEM); }
 
-    public get attacking(): boolean { return Input.isJustPressed(PlayerInput.ATTACKING); }
+    public get attacking(): boolean { return Input.isMouseJustPressed(0); }
+    
+    public get heavyAttacking(): boolean { return Input.isMouseJustPressed(2); }
 
     public get dodging(): boolean { return Input.isJustPressed(PlayerInput.DODGING); }
 

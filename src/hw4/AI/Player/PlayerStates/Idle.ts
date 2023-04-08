@@ -27,6 +27,9 @@ export default class Idle extends PlayerState {
         else if (this.parent.controller.attacking) {
             this.finished(PlayerStateType.ATTACKING);
         }
+        else if (this.parent.controller.heavyAttacking) {
+            this.finished(PlayerStateType.HEAVY_ATTACKING);
+        }
         else if (this.parent.controller.dodging) {
             this.finished(PlayerStateType.DODGING);
         }

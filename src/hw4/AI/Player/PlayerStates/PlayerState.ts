@@ -13,6 +13,7 @@ export enum PlayerStateType {
     IDLE = "IDLE",
     INVINCIBLE = "INVINCIBLE",
     ATTACKING = "ATTACKING",
+    HEAVY_ATTACKING = "HEAVY_ATTACKING",
     MOVING = "MOVING",
     DEAD = "DEAD",
     DODGING = "DODGING"
@@ -99,10 +100,11 @@ import Idle from "./Idle";
 import Invincible from "./Invincible";
 import Moving from "./Moving";
 import Attacking from "./Attacking";
+import HeavyAttacking from "./HeavyAttacking"
 import Dodging from "./Dodging";
 import Dead from "./Dead";
 import PlayerActor from "../../../Actors/PlayerActor";
 import Receiver from "../../../../Wolfie2D/Events/Receiver";
 import Vec2 from "../../../../Wolfie2D/DataTypes/Vec2";
 import Input from "../../../../Wolfie2D/Input/Input";
-export { Idle, Invincible, Moving, Attacking, Dodging, Dead} 
+export { Idle, Invincible, Moving, Attacking, HeavyAttacking, Dodging, Dead} 

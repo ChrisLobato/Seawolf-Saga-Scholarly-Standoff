@@ -166,7 +166,7 @@ export default class MainHW4Scene extends HW4Scene {
     public handleEvent(event: GameEvent): void {
         switch (event.type) {
             case PlayerEvent.PLAYER_ATTACKED: {
-                this.handleAttack(event.data.get("player"), event.data.get("controller"));
+                this.handleAttack(event.data.get("player"), event.data.get("controller"), event.data.get("type"));
                 break;
             }
             case PlayerEvent.ATTACK_OVER: {
@@ -200,13 +200,23 @@ export default class MainHW4Scene extends HW4Scene {
         }
     }
 
-    protected handleAttack(player: PlayerActor, controller: PlayerController): void {
+    protected handleAttack(player: PlayerActor, controller: PlayerController, type: string): void {
         // console.log('attack in main at', player.position.toString(), 'facing', controller.faceDir.toString());
         
         // REVISIT random values for testing
-        let attackWidth = 20;
-        let attackLength = 20;
-        let distanceMultiplier = 10; 
+        let attackWidth = 0;
+        let attackLength = 0;
+        let distanceMultiplier = 0;
+        if(type === "light"){
+            attackWidth = 20;
+            attackLength = 20;
+            distanceMultiplier = 10;
+        }
+        else if(type === "heavy") {
+            attackWidth = 40;
+            attackLength = 40;
+            distanceMultiplier = 20;
+        }
 
         // making sure player position is unchanged
         let damageSource: Vec2 = Vec2.ZERO;
@@ -219,8 +229,19 @@ export default class MainHW4Scene extends HW4Scene {
         damageSource.x += dir.x * distanceMultiplier;
         damageSource.y += dir.y * distanceMultiplier;
 
-        this.attackMarker = <Rect>this.add.graphic(GraphicType.RECT, "primary", { position: damageSource, size: new Vec2(20, 20)});
-        this.attackMarker.color = new Color(255, 0, 255, .20);
+        
+        if(type === "light") {
+            this.attackMarker = <Rect>this.add.graphic(GraphicType.RECT, "primary", { position: damageSource, 
+                size: new Vec2(attackWidth, attackLength)});
+            this.attackMarker.color = new Color(255, 0, 255, .20);
+        }
+        else if(type === "heavy") {
+            this.attackMarker = <Rect>this.add.graphic(GraphicType.RECT, "primary", { position: damageSource,
+                size: new Vec2(attackWidth, attackLength)});
+            this.attackMarker.color = new Color(255, 255, 0, .20);
+        }
+        
+
         this.attackMarker.visible = true;
 
 
