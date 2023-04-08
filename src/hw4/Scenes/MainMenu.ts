@@ -8,6 +8,9 @@ import MainHW4Scene from "./MainHW4Scene";
 import GameEvent from "../../Wolfie2D/Events/GameEvent";
 import AstarDemoScene from "./AstarDemoScene";
 import GuardDemoScene from "./GuardDemoScene";
+import HelpScreen from "./HelpScreen";
+import ControlsScreen from "./ControlsScreen";
+import LevelsScreen from "./LevelsScreen";
 
 export default class MainMenu extends Scene {
     // Layers, for multiple main menu screens
@@ -32,7 +35,7 @@ export default class MainMenu extends Scene {
         this.mainMenu = this.addUILayer("mainMenu");
         this.background = this.addUILayer("background");
         this.background.setDepth(0);
-        this.mainMenu.setDepth(1)
+        this.mainMenu.setDepth(1);
         let backgroundSprite = this.add.sprite("MainMenu", "background");
         let logo = this.add.sprite("logo","background");
         backgroundSprite.positionX = center.x;
@@ -40,7 +43,7 @@ export default class MainMenu extends Scene {
         backgroundSprite.scale.set(.77,.77)
         logo.positionX = center.x;
         logo.positionY = center.y-420;
-        logo.scale.set(.75,.75)
+        logo.scale.set(.75,.75);
         
 
 
@@ -95,11 +98,15 @@ export default class MainMenu extends Scene {
                 break;
             }
             case "level select": {
-                this.sceneManager.changeToScene(AstarDemoScene);
+                this.sceneManager.changeToScene(LevelsScreen);
                 break;
             }
-            case "level select": {
-                this.sceneManager.changeToScene(GuardDemoScene);
+            case "controls":{
+                this.sceneManager.changeToScene(ControlsScreen);
+                break;
+            }
+            case "help": {
+                this.sceneManager.changeToScene(HelpScreen);
                 break;
             }
         }
