@@ -53,26 +53,31 @@ export default class PlayerController {
      */
     public get rotation(): number {
         //REVIST
-        
-        var dir = this.faceDir;
 
-        //Snap to 4 directions
-        
-        //Snap Up
-        if(dir.y < -0.5 && dir.x > -0.5 && dir.x < 0.5){
-            return 0;
+        let dir = this.faceDir;
+
+        // going vertically or horizontally
+        let vertical = Math.abs(dir.y);
+        let horizontal = Math.abs(dir.x);
+
+        if(vertical > horizontal){
+            // going up or down
+            if(dir.y < 0) {
+                return 0;
+            }
+            else {
+                return Math.PI;
+            }
+
         }
-        //Snap Right
-        else if(dir.x > 0.5 && dir.y > -0.5 && dir.y < 0.5){
-            return 3*Math.PI/2;
-        }
-        //Snap Down
-        else if(dir.y > 0.5 && dir.x > -0.5 && dir.x < 0.5){
-            return Math.PI;
-        }
-        //Snap Left
-        else if(dir.x < -0.5 && dir.y > -0.5 && dir.y < 0.5){
-            return Math.PI/2;
+        else {
+            // going left or right 
+            if(dir.x < 0) {
+                return Math.PI/2;
+            }
+            else {
+                return 3*Math.PI/2;
+            }
         }
     }
 
