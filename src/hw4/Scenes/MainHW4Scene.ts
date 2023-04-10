@@ -206,16 +206,16 @@ export default class MainHW4Scene extends HW4Scene {
         // REVISIT random values for testing
         let attackWidth = 0;
         let attackLength = 0;
-        let distanceMultiplier = 0;
+        let distanceAdder = 0;
         if(type === "light"){
             attackWidth = 20;
             attackLength = 20;
-            distanceMultiplier = 10;
+            distanceAdder = 20;
         }
         else if(type === "heavy") {
             attackWidth = 40;
             attackLength = 40;
-            distanceMultiplier = 20;
+            distanceAdder = 30;
         }
 
         // making sure player position is unchanged
@@ -224,10 +224,18 @@ export default class MainHW4Scene extends HW4Scene {
         damageSource.y = player.position.y;
 
         // shifting the damage box over to the direction that is being faced
-        let dir = controller.faceDir;
-        
-        damageSource.x += dir.x * distanceMultiplier;
-        damageSource.y += dir.y * distanceMultiplier;
+        if(controller.rotation === 0) { 
+            damageSource.y -= distanceAdder; // UP
+        }
+        else if(controller.rotation === Math.PI ){ 
+            damageSource.y += distanceAdder; // DOWN
+        }
+        else if(controller.rotation === Math.PI/2 ){
+            damageSource.x -= distanceAdder; // LEFT
+        }
+        else {
+            damageSource.x += distanceAdder; // RIGHT
+        }
 
         
         if(type === "light") {
