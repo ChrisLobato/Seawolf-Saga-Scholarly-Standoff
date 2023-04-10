@@ -91,7 +91,7 @@ export default class MainHW4Scene extends HW4Scene {
         this.load.spritesheet("RedHealer", "hw4_assets/spritesheets/RedHealer.json");
 
         // Load the tilemap
-        this.load.tilemap("level", "hw4_assets/tilemaps/HW3Tilemap.json");
+        this.load.tilemap("level", "hw4_assets/tilemaps/boss_map_1.json");
 
         // Load the enemy locations
         this.load.object("red", "hw4_assets/data/enemies/red.json");
@@ -126,12 +126,12 @@ export default class MainHW4Scene extends HW4Scene {
         
         // Create the player
         this.initializePlayer();
-        this.initializeItems();
+        // this.initializeItems();
 
         this.initializeNavmesh();
 
         // Create the NPCS
-        this.initializeNPCs();
+        // this.initializeNPCs();
 
         // Subscribe to relevant events
         this.receiver.subscribe("healthpack");
