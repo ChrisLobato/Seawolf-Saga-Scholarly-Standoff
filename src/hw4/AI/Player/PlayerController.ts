@@ -51,7 +51,30 @@ export default class PlayerController {
      * should be facing.
      * @return a number representing how much the player should be rotated
      */
-    public get rotation(): number { return Vec2.UP.angleToCCW(this.faceDir); }
+    public get rotation(): number {
+        //REVIST
+        
+        var dir = this.faceDir;
+
+        //Snap to 4 directions
+        
+        //Snap Up
+        if(dir.y < -0.5 && dir.x > -0.5 && dir.x < 0.5){
+            return 0;
+        }
+        //Snap Right
+        else if(dir.x > 0.5 && dir.y > -0.5 && dir.y < 0.5){
+            return 3*Math.PI/2;
+        }
+        //Snap Down
+        else if(dir.y > 0.5 && dir.x > -0.5 && dir.x < 0.5){
+            return Math.PI;
+        }
+        //Snap Left
+        else if(dir.x < -0.5 && dir.y > -0.5 && dir.y < 0.5){
+            return Math.PI/2;
+        }
+    }
 
     /** 
      * Checks if the player is attempting to use a held item or not.
