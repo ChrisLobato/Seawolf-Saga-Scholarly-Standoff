@@ -85,10 +85,7 @@ export default class MainHW4Scene extends HW4Scene {
         this.load.spritesheet("player1", "hw4_assets/spritesheets/s4_hero.json");
 
         // Load in the enemy sprites
-        this.load.spritesheet("BlueEnemy", "hw4_assets/spritesheets/BlueEnemy.json");
-        this.load.spritesheet("RedEnemy", "hw4_assets/spritesheets/RedEnemy.json");
-        this.load.spritesheet("BlueHealer", "hw4_assets/spritesheets/BlueHealer.json");
-        this.load.spritesheet("RedHealer", "hw4_assets/spritesheets/RedHealer.json");
+        this.load.spritesheet("boss", "hw4_assets/spritesheets/s4_boss.json");
 
         // Load the tilemap
         this.load.tilemap("level", "hw4_assets/tilemaps/boss_map_1.json");
@@ -132,6 +129,9 @@ export default class MainHW4Scene extends HW4Scene {
 
         // Create the NPCS
         // this.initializeNPCs();
+
+        // Create the boss
+        //this.initializeBoss();
 
         // Subscribe to relevant events
         this.receiver.subscribe("healthpack");
@@ -350,6 +350,29 @@ export default class MainHW4Scene extends HW4Scene {
         this.viewport.follow(player);
     }
     /**
+     * Initialize the boss
+     */
+    protected initializeBoss(): void {
+        let boss = this.add.animatedSprite(NPCActor, "boss", "primary");
+        boss.position.set(200, 200);
+        boss.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
+        boss.battleGroup = 2
+        boss.speed = 10;
+        boss.health = 1;
+        boss.maxHealth = 10;
+        boss.navkey = "navmesh";
+        // Give the NPC a healthbar
+        let healthbar = new HealthbarHUD(this, boss, "primary", {size: boss.size.clone().scaled(2, 1/2), offset: boss.size.clone().scaled(0, -1/2)});
+        this.healthbars.set(boss.id, healthbar);
+
+        // Give the NPCs their AI
+        boss.addAI(GuardBehavior, {target: this.battlers[0], range: 100});
+        // Play the NPCs "IDLE" animation 
+        boss.animation.play("DOWN");
+        this.battlers.push(boss);
+    }
+
+    /**
      * Initialize the NPCs 
      */
     protected initializeNPCs(): void {
@@ -407,7 +430,7 @@ export default class MainHW4Scene extends HW4Scene {
 
         // Initialize the blue enemies
         for (let i = 0; i < blue.enemies.length; i++) {
-            let npc = this.add.animatedSprite(NPCActor, "BlueEnemy", "primary");
+            let npc = this.add.animatedSprite(NPCActor, "boss", "primary");
             npc.position.set(blue.enemies[i][0], blue.enemies[i][1]);
             npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
 
@@ -425,7 +448,7 @@ export default class MainHW4Scene extends HW4Scene {
             npc.addAI(GuardBehavior, {target: this.battlers[0], range: 100});
 
             // Play the NPCs "IDLE" animation 
-            npc.animation.play("IDLE");
+            npc.animation.play("DOWN");
 
             this.battlers.push(npc);
         }
