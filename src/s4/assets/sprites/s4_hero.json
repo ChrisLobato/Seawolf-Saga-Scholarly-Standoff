@@ -57,7 +57,7 @@
         },
         {
             "name": "DEAD",
-            "frames": [ {"index": 12, "duration": 30}, {"index": 13, "duration": 30}, {"index": 14, "duration": 30} ]
+            "frames": [ {"index": 12, "duration": 30}, {"index": 13, "duration": 30}, {"index": 14, "duration": 30}, {"index": 13, "duration": 30} ]
         },
         {
             "name": "DODGE_START",

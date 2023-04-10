@@ -63,7 +63,7 @@ export default abstract class PlayerState extends State {
         if (this.parent.controller.useItem) {
 
         }
-
+        
         if(this.parent.controller.dodging && this.dodgeCharges > 1){
             // subtract a dodge charge
             this.dodgeCharges = this.dodgeCharges - 1;
