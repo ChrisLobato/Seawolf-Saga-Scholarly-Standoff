@@ -82,7 +82,7 @@ export default class MainHW4Scene extends HW4Scene {
      */
     public override loadScene() {
         // Load the player and enemy spritesheets
-        this.load.spritesheet("player1", "hw4_assets/spritesheets/player1.json");
+        this.load.spritesheet("player1", "hw4_assets/spritesheets/s4_hero.json");
 
         // Load in the enemy sprites
         this.load.spritesheet("BlueEnemy", "hw4_assets/spritesheets/BlueEnemy.json");
@@ -344,7 +344,7 @@ export default class MainHW4Scene extends HW4Scene {
         player.addAI(PlayerAI);
 
         // Start the player in the "IDLE" animation
-        player.animation.play("IDLE");
+        player.animation.play("DOWN");
 
         this.battlers.push(player);
         this.viewport.follow(player);

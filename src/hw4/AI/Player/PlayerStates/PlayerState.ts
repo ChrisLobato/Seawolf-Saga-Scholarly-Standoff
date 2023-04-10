@@ -5,7 +5,19 @@ import Item from "../../../GameSystems/ItemSystem/Item";
 import PlayerAI from "../PlayerAI";
 
 export enum PlayerAnimationType {
-    IDLE = "IDLE"
+    IDLE_DOWN = "IDLE_DOWN",
+    IDLE_UP = "IDLE_UP",
+    IDLE_LEFT = "IDLE_LEFT",
+    IDLE_RIGHT = "IDLE_RIGHT",
+    WALK_DOWN = "WALK_DOWN",
+    WALK_UP = "WALK_UP",
+    WALK_LEFT = "WALK_LEFT",
+    WALK_RIGHT = "WALK_RIGHT",
+    ATTACK_DOWN = "ATTACK_DOWN",
+    ATTACK_UP = "ATTACK_UP",
+    ATTACK_LEFT = "ATTACK_LEFT",
+    ATTACK_RIGHT = "ATTACK_RIGHT",
+    DODGE = "DODGE"
 }
 
 
@@ -45,7 +57,21 @@ export default abstract class PlayerState extends State {
             this.dodgeCharges = 3;
 
         // Adjust the angle the player is facing 
-        this.parent.owner.rotation = this.parent.controller.rotation;
+        //this.parent.owner.rotation = this.parent.controller.rotation;
+        if(this.parent.controller.rotation === 0) { 
+            this.owner.animation.play("UP"); // UP
+        }
+        else if(this.parent.controller.rotation === Math.PI ){ 
+            this.owner.animation.play("DOWN"); // DOWN
+        }
+        else if(this.parent.controller.rotation === Math.PI/2 ){
+            this.owner.animation.play("LEFT"); // LEFT
+        }
+        else {
+            this.owner.animation.play("RIGHT"); // RIGHT
+        }
+
+
         // Move the player
         this.parent.owner.move(this.parent.controller.moveDir);
 
@@ -63,7 +89,7 @@ export default abstract class PlayerState extends State {
         if (this.parent.controller.useItem) {
 
         }
-        
+
         if(this.parent.controller.dodging && this.dodgeCharges > 1){
             // subtract a dodge charge
             this.dodgeCharges = this.dodgeCharges - 1;

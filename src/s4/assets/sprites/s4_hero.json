@@ -8,19 +8,19 @@
     "durationType": "time",
     "animations": [
         { 
-            "name": "DOWN",
+            "name": "IDLE_DOWN",
             "frames": [ {"index": 0, "duration": 1} ]
         },
         { 
-            "name": "RIGHT",
+            "name": "IDLE_RIGHT",
             "frames": [ {"index": 3, "duration": 1} ]
         },
         { 
-            "name": "LEFT",
+            "name": "IDLELEFT",
             "frames": [ {"index": 6, "duration": 1} ]
         },
         { 
-            "name": "UP",
+            "name": "IDLE_UP",
             "frames": [ {"index": 9, "duration": 1} ]
         },
         {
