@@ -38,17 +38,25 @@ export default abstract class PlayerState extends State {
     protected receiver: Receiver;
 
     protected dodgeCharges: number;
+    protected attackFlag: boolean;
 
     public constructor(parent: PlayerAI, owner: PlayerActor) {
         super(parent);
         this.owner = owner;
         this.dodgeCharges = 3;
+        this.receiver = new Receiver();
+        this.receiver.subscribe(PlayerEvent.PLAYER_ATTACKED);
+        this.receiver.subscribe(PlayerEvent.ATTACK_OVER);
+        this.attackFlag = false;
     }
 
     public override onEnter(options: Record<string, any>): void {}
     public override onExit(): Record<string, any> { return {}; }
     public override update(deltaT: number): void {
         
+        while (this.receiver.hasNextEvent()) {
+            this.handleInput(this.receiver.getNextEvent());
+        }
         // update by a tiny bit every update, using deltaT to account for fps differences
         // Can modify deltaT with rechargeModifier to make recharging faster or slower
         let rechargeModifier = 1;
@@ -59,16 +67,32 @@ export default abstract class PlayerState extends State {
         // Adjust the angle the player is facing 
         //this.parent.owner.rotation = this.parent.controller.rotation;
         if(this.parent.controller.rotation === 0) { 
-            this.owner.animation.play("UP"); // UP
+            if (this.attackFlag){
+                this.owner.animation.play("ATTACK_UP");
+            } else {
+                this.owner.animation.play("UP"); // UP
+            }
         }
         else if(this.parent.controller.rotation === Math.PI ){ 
-            this.owner.animation.play("DOWN"); // DOWN
+            if (this.attackFlag){
+                this.owner.animation.play("ATTACK_DOWN");
+            } else {
+                this.owner.animation.play("DOWN"); // DOWN
+            }
         }
         else if(this.parent.controller.rotation === Math.PI/2 ){
-            this.owner.animation.play("LEFT"); // LEFT
+            if (this.attackFlag){
+                this.owner.animation.play("ATTACK_LEFT");
+            } else {
+                this.owner.animation.play("LEFT"); // LEFT
+            }
         }
         else {
-            this.owner.animation.play("RIGHT"); // RIGHT
+            if (this.attackFlag){
+                this.owner.animation.play("ATTACK_RIGHT");
+            } else {
+                this.owner.animation.play("RIGHT"); // RIGHT
+            }
         }
 
 
@@ -113,7 +137,16 @@ export default abstract class PlayerState extends State {
     }
 
     public override handleInput(event: GameEvent): void {
+        
         switch(event.type) {
+            case PlayerEvent.PLAYER_ATTACKED: {
+                this.attackFlag = true;
+                break;
+            }
+            case PlayerEvent.ATTACK_OVER: {
+                this.attackFlag = false;
+                break;
+            }
             default: {
                 throw new Error(`Unhandled event of type ${event.type} caught in PlayerState!`);
             }
