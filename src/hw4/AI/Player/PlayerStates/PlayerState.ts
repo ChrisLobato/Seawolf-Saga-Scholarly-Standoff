@@ -38,17 +38,27 @@ export default abstract class PlayerState extends State {
     protected receiver: Receiver;
 
     protected dodgeCharges: number;
+    protected attackFlag: boolean;
 
     public constructor(parent: PlayerAI, owner: PlayerActor) {
         super(parent);
         this.owner = owner;
         this.dodgeCharges = 3;
+        this.receiver = new Receiver();
+        this.receiver.subscribe(PlayerEvent.PLAYER_ATTACKED);
+        this.receiver.subscribe(PlayerEvent.ATTACK_OVER);
+        this.receiver.subscribe(PlayerEvent.PLAYER_DODGED);
+        this.receiver.subscribe(PlayerEvent.DODGE_OVER);
+        this.attackFlag = false;
     }
 
     public override onEnter(options: Record<string, any>): void {}
     public override onExit(): Record<string, any> { return {}; }
     public override update(deltaT: number): void {
         
+        while (this.receiver.hasNextEvent()) {
+            this.handleInput(this.receiver.getNextEvent());
+        }
         // update by a tiny bit every update, using deltaT to account for fps differences
         // Can modify deltaT with rechargeModifier to make recharging faster or slower
         let rechargeModifier = 1;
@@ -60,19 +70,36 @@ export default abstract class PlayerState extends State {
 
         // Adjust the angle the player is facing 
         //this.parent.owner.rotation = this.parent.controller.rotation;
-        if(this.parent.controller.rotation === 0) { 
-            this.owner.animation.play("UP"); // UP
-        }
-        else if(this.parent.controller.rotation === Math.PI ){ 
-            this.owner.animation.play("DOWN"); // DOWN
-        }
-        else if(this.parent.controller.rotation === Math.PI/2 ){
-            this.owner.animation.play("LEFT"); // LEFT
-        }
-        else {
-            this.owner.animation.play("RIGHT"); // RIGHT
-        }
-
+        if (!(this.owner.animation.isPlaying("DODGE_START") || this.owner.animation.isPlaying("DODGE_END"))){
+            if(this.parent.controller.rotation === 0) { 
+                if (this.attackFlag){
+                    this.owner.animation.play("ATTACK_UP");
+                } else {
+                    this.owner.animation.play("UP"); // UP
+                }
+            }
+            else if(this.parent.controller.rotation === Math.PI ){ 
+                if (this.attackFlag){
+                    this.owner.animation.play("ATTACK_DOWN");
+                } else {
+                    this.owner.animation.play("DOWN"); // DOWN
+                }
+            }
+            else if(this.parent.controller.rotation === Math.PI/2 ){
+                if (this.attackFlag){
+                    this.owner.animation.play("ATTACK_LEFT");
+                } else {
+                    this.owner.animation.play("LEFT"); // LEFT
+                }
+            }
+            else {
+                if (this.attackFlag){
+                    this.owner.animation.play("ATTACK_RIGHT");
+                } else {
+                    this.owner.animation.play("RIGHT"); // RIGHT
+                }
+            }
+    }
 
         // Move the player
         this.parent.owner.move(this.parent.controller.moveDir);
@@ -94,12 +121,14 @@ export default abstract class PlayerState extends State {
 
         if(this.parent.controller.dodging && this.dodgeCharges > 1){
             // subtract a dodge charge
+            //this.owner.animation.play("DODGE_START", false, PlayerEvent.DODGE_OVER);
+            //console.log("Dodge Start");
             this.dodgeCharges = this.dodgeCharges - 1;
             this.emitter.fireEvent(PlayerEvent.PLAYER_DODGED);
             let vec: Vec2 = Vec2.ZERO;
             vec = this.owner.position.vecTo(Input.getGlobalMousePosition());
             // limitting the range
-            const limitter =  150;
+            const limitter =  100;
             if(vec.x > limitter)
                 vec.x = limitter;
             else if(vec.x < -limitter)
@@ -115,7 +144,25 @@ export default abstract class PlayerState extends State {
     }
 
     public override handleInput(event: GameEvent): void {
+        
         switch(event.type) {
+            case PlayerEvent.PLAYER_DODGED: {
+
+                break;
+            }
+            case PlayerEvent.DODGE_OVER: {
+                //this.owner.animation.play("DODGE_END");
+                //console.log("Dodge Over");
+                break;
+            }
+            case PlayerEvent.PLAYER_ATTACKED: {
+                this.attackFlag = true;
+                break;
+            }
+            case PlayerEvent.ATTACK_OVER: {
+                this.attackFlag = false;
+                break;
+            }
             default: {
                 throw new Error(`Unhandled event of type ${event.type} caught in PlayerState!`);
             }
