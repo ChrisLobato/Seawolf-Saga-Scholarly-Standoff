@@ -78,7 +78,7 @@ export default class InventoryHUD implements Updateable {
         let width = this.itemSlots[0].size.x;
         let height = this.itemSlots[0].size.y;
         for (let i = 0; i < this.size; i += 1) {
-            // this.itemSlots[i].position.set(this.start.x + i*(width + this.padding), this.start.y).div(scalar);
+            //this.itemSlots[i].position.set(this.start.x + i*(width + this.padding), this.start.y).div(scalar);
         }
         // Set the slot numbers in the user interface
         this.itemSlotNums = new Array<Label>();
@@ -86,7 +86,7 @@ export default class InventoryHUD implements Updateable {
             // this.itemSlotNums[i] = <Label>this.scene.add.uiElement(UIElementType.LABEL, this.slotLayer, {position: new Vec2(this.start.x + i*(width + this.padding), this.start.y + height/2 + 8).div(scalar), text: `${i + 1}`});
             // this.itemSlotNums[i].fontSize = 12;
             // this.itemSlotNums[i].font = "Courier";
-            // this.itemSlotNums[i].textColor = Color.TRANSPARENT;
+            // this.itemSlotNums[i].textColor = Color.WHITE;
         }
     }
 

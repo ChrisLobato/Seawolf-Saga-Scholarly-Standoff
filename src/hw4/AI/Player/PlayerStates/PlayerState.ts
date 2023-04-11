@@ -62,9 +62,7 @@ export default abstract class PlayerState extends State {
         // update by a tiny bit every update, using deltaT to account for fps differences
         // Can modify deltaT with rechargeModifier to make recharging faster or slower
         let rechargeModifier = 1;
-        
         this.dodgeCharges = this.dodgeCharges + ( deltaT * rechargeModifier );
-            
         if(this.dodgeCharges > 3)
             this.dodgeCharges = 3;
 
@@ -124,7 +122,7 @@ export default abstract class PlayerState extends State {
             //this.owner.animation.play("DODGE_START", false, PlayerEvent.DODGE_OVER);
             //console.log("Dodge Start");
             this.dodgeCharges = this.dodgeCharges - 1;
-            this.emitter.fireEvent(PlayerEvent.PLAYER_DODGED);
+
             let vec: Vec2 = Vec2.ZERO;
             vec = this.owner.position.vecTo(Input.getGlobalMousePosition());
             // limitting the range
