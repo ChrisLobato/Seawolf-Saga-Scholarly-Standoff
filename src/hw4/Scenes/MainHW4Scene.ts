@@ -8,6 +8,7 @@ import Graphic from "../../Wolfie2D/Nodes/Graphic";
 import { GraphicType } from "../../Wolfie2D/Nodes/Graphics/GraphicTypes";
 import Line from "../../Wolfie2D/Nodes/Graphics/Line";
 import Rect from "../../Wolfie2D/Nodes/Graphics/Rect";
+import Sprite from "../../Wolfie2D/Nodes/Sprites/Sprite";
 import OrthogonalTilemap from "../../Wolfie2D/Nodes/Tilemaps/OrthogonalTilemap";
 import Navmesh from "../../Wolfie2D/Pathfinding/Navmesh";
 import DirectStrategy from "../../Wolfie2D/Pathfinding/Strategies/DirectStrategy";
@@ -55,10 +56,12 @@ export default class MainHW4Scene extends HW4Scene {
 
 
     private bases: BattlerBase[];
-
+    private HealthIcons: Array<Sprite>;
+    private DodgeIcons: Array<Sprite>;
+    private currentDodge = 3;
     private healthpacks: Array<Healthpack>;
     private laserguns: Array<LaserGun>;
-
+    private dodgeTimer: Timer;
     // The wall layer of the tilemap
     private walls: OrthogonalTilemap;
 
@@ -75,6 +78,7 @@ export default class MainHW4Scene extends HW4Scene {
 
         this.laserguns = new Array<LaserGun>();
         this.healthpacks = new Array<Healthpack>();
+
     }
 
     /**
@@ -83,7 +87,7 @@ export default class MainHW4Scene extends HW4Scene {
     public override loadScene() {
         // Load the player and enemy spritesheets
         this.load.spritesheet("player1", "hw4_assets/spritesheets/s4_hero.json");
-
+        this.dodgeTimer = new Timer(2500,this.handleRecharge,false);
         // Load in the enemy sprites
         this.load.spritesheet("BlueEnemy", "hw4_assets/spritesheets/BlueEnemy.json");
         this.load.spritesheet("RedEnemy", "hw4_assets/spritesheets/RedEnemy.json");
@@ -105,6 +109,11 @@ export default class MainHW4Scene extends HW4Scene {
         this.load.image("healthpack", "hw4_assets/sprites/healthpack.png");
         this.load.image("inventorySlot", "hw4_assets/sprites/inventory.png");
         this.load.image("laserGun", "hw4_assets/sprites/laserGun.png");
+
+        //Load the health Icons 
+        this.load.image("healthIcon", "hw4_assets/sprites/WolfieHealth.png");
+        this.load.image("dodgeIcon", "hw4_assets/sprites/DodgeIcon.png");
+
     }
     /**
      * @see Scene.startScene
@@ -139,6 +148,8 @@ export default class MainHW4Scene extends HW4Scene {
         this.receiver.subscribe(ItemEvent.ITEM_REQUEST);
         this.receiver.subscribe(PlayerEvent.PLAYER_ATTACKED);
         this.receiver.subscribe(PlayerEvent.ATTACK_OVER);
+        this.receiver.subscribe(PlayerEvent.PLAYER_DODGED);
+        //this.receiver.subscribe(PlayerEvent.PLAYER_DODGE_CHARGE);
 
         // Add a UI for health
         this.addUILayer("health");
@@ -173,11 +184,17 @@ export default class MainHW4Scene extends HW4Scene {
                 this.handleAttackOver();
                 break;
             }
-            /*
+            
             case PlayerEvent.PLAYER_DODGED: {
                 this.handleDodge();
                 break;
             }
+            // case PlayerEvent.PLAYER_DODGE_CHARGE:{
+            //     this.handleRecharge();
+            //     break;
+            // }
+            
+            /*
             case PlayerEvent.DODGE_OVER: {
                 this.handleDodgeOver();
                 break;
@@ -198,6 +215,20 @@ export default class MainHW4Scene extends HW4Scene {
                 throw new Error(`Unhandled event type "${event.type}" caught in HW3Scene event handler`);
             }
         }
+    }
+    handleRecharge() {
+        this.DodgeIcons[0].visible = true;
+        this.DodgeIcons[1].visible = true;
+        this.DodgeIcons[2].visible = true;
+        // this.DodgeIcons[3].visible = true;
+    }
+    handleDodge() {
+        this.DodgeIcons[this.currentDodge].visible = false;
+        this.currentDodge--;
+        // if(this.currentDodge==1){
+        //     this.dodgeTimer.reset()
+        //     this.dodgeTimer.start()
+        // }
     }
 
     protected handleAttack(player: PlayerActor, controller: PlayerController, type: string): void {
@@ -322,8 +353,8 @@ export default class MainHW4Scene extends HW4Scene {
         player.position.set(40, 40);
         player.battleGroup = 2;
 
-        player.health = 10;
-        player.maxHealth = 10;
+        player.health = 4;
+        player.maxHealth = 4;
 
         player.inventory.onChange = ItemEvent.INVENTORY_CHANGED
         this.inventoryHud = new InventoryHUD(this, player.inventory, "inventorySlot", {
@@ -337,8 +368,51 @@ export default class MainHW4Scene extends HW4Scene {
         player.addPhysics(new AABB(Vec2.ZERO, new Vec2(8, 8)));
 
         // Give the player a healthbar
-        let healthbar = new HealthbarHUD(this, player, "primary", {size: player.size.clone().scaled(2, 1/2), offset: player.size.clone().scaled(0, -1/2)});
-        this.healthbars.set(player.id, healthbar);
+        // let healthbar = new HealthbarHUD(this, player, "primary", {size: player.size.clone().scaled(2, 1/2), offset: player.size.clone().scaled(0, -1/2)});
+        // this.healthbars.set(player.id, healthbar);
+        this.addUILayer("health2")
+        this.HealthIcons = new Array(4);
+        this.HealthIcons[0] = this.add.sprite("healthIcon","health2");
+        this.HealthIcons[1] = this.add.sprite("healthIcon","health2");
+        this.HealthIcons[2] = this.add.sprite("healthIcon","health2");
+        this.HealthIcons[3] = this.add.sprite("healthIcon","health2");
+        this.HealthIcons[0].scale.set(.25,.25);
+        this.HealthIcons[1].scale.set(.25,.25);
+        this.HealthIcons[2].scale.set(.25,.25);
+        this.HealthIcons[3].scale.set(.25,.25);
+
+
+
+        this.HealthIcons[0].positionX = this.viewport.getCenter().x - 490;
+        this.HealthIcons[0].positionY = 0 +30;
+        this.HealthIcons[1].positionX = this.viewport.getCenter().x - 440;
+        this.HealthIcons[1].positionY = 0 +30;
+        this.HealthIcons[2].positionX = this.viewport.getCenter().x - 390;
+        this.HealthIcons[2].positionY = 0 +30;
+        this.HealthIcons[3].positionX = this.viewport.getCenter().x - 340;
+        this.HealthIcons[3].positionY = 0 +30;
+
+        this.DodgeIcons = new Array(4);
+        this.DodgeIcons[0] = this.add.sprite("dodgeIcon","health2");
+        this.DodgeIcons[1] = this.add.sprite("dodgeIcon","health2");
+        this.DodgeIcons[2] = this.add.sprite("dodgeIcon","health2");
+        this.DodgeIcons[3] = this.add.sprite("dodgeIcon","health2");
+        this.DodgeIcons[0].scale.set(.25,.25);
+        this.DodgeIcons[1].scale.set(.25,.25);
+        this.DodgeIcons[2].scale.set(.25,.25);
+        this.DodgeIcons[3].scale.set(.25,.25);
+
+        
+        this.DodgeIcons[0].positionX = this.viewport.getCenter().x - 490;
+        this.DodgeIcons[0].positionY = 0 +60;
+        this.DodgeIcons[1].positionX = this.viewport.getCenter().x - 440;
+        this.DodgeIcons[1].positionY = 0 +60;
+        this.DodgeIcons[2].positionX = this.viewport.getCenter().x - 390;
+        this.DodgeIcons[2].positionY = 0 +60;
+        this.DodgeIcons[3].positionX = this.viewport.getCenter().x - 340;
+        this.DodgeIcons[3].positionY = 0 +60;
+
+
 
         // Give the player PlayerAI
         player.addAI(PlayerAI);
