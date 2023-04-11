@@ -6,9 +6,10 @@ import NPCAction from "./NPCAction";
  * An Idle action for the NPCGoapAI. Basically a default action for all of the NPCs
  * to do nothing.
  */
-export default class IdleAction extends NPCAction {
+export default class GotoAction extends NPCAction {
 
     public performAction(target: TargetableEntity): void {
+        console.log("the player has been attacked!");
         this.finished();
     }
 

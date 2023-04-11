@@ -67,6 +67,8 @@ export default class MainHW4Scene extends HW4Scene {
 
     private attackMarker: Graphic;
 
+    private actor: PlayerActor;
+
     public constructor(viewport: Viewport, sceneManager: SceneManager, renderingManager: RenderingManager, options: Record<string, any>) {
         super(viewport, sceneManager, renderingManager, options);
 
@@ -82,13 +84,10 @@ export default class MainHW4Scene extends HW4Scene {
      */
     public override loadScene() {
         // Load the player and enemy spritesheets
-        this.load.spritesheet("player1", "hw4_assets/spritesheets/player1.json");
+        this.load.spritesheet("player1", "hw4_assets/spritesheets/s4_hero.json");
 
         // Load in the enemy sprites
-        this.load.spritesheet("BlueEnemy", "hw4_assets/spritesheets/BlueEnemy.json");
-        this.load.spritesheet("RedEnemy", "hw4_assets/spritesheets/RedEnemy.json");
-        this.load.spritesheet("BlueHealer", "hw4_assets/spritesheets/BlueHealer.json");
-        this.load.spritesheet("RedHealer", "hw4_assets/spritesheets/RedHealer.json");
+        this.load.spritesheet("Boss", "hw4_assets/spritesheets/s4_boss.json");
 
         // Load the tilemap
         this.load.tilemap("level", "hw4_assets/tilemaps/boss_map_1.json");
@@ -125,7 +124,7 @@ export default class MainHW4Scene extends HW4Scene {
         this.initLayers();
         
         // Create the player
-        this.initializePlayer();
+        this.actor = this.initializePlayer();
         // this.initializeItems();
 
         this.initializeNavmesh();
@@ -133,12 +132,17 @@ export default class MainHW4Scene extends HW4Scene {
         // Create the NPCS
         // this.initializeNPCs();
 
+        // Create the boss
+        this.initializeBoss();
+
         // Subscribe to relevant events
         this.receiver.subscribe("healthpack");
         this.receiver.subscribe("enemyDied");
         this.receiver.subscribe(ItemEvent.ITEM_REQUEST);
         this.receiver.subscribe(PlayerEvent.PLAYER_ATTACKED);
         this.receiver.subscribe(PlayerEvent.ATTACK_OVER);
+        this.receiver.subscribe(PlayerEvent.PLAYER_DODGED);
+        this.receiver.subscribe(PlayerEvent.DODGE_OVER);
 
         // Add a UI for health
         this.addUILayer("health");
@@ -173,7 +177,7 @@ export default class MainHW4Scene extends HW4Scene {
                 this.handleAttackOver();
                 break;
             }
-            /*
+            
             case PlayerEvent.PLAYER_DODGED: {
                 this.handleDodge();
                 break;
@@ -182,7 +186,7 @@ export default class MainHW4Scene extends HW4Scene {
                 this.handleDodgeOver();
                 break;
             }
-            */
+            
             case BattlerEvent.BATTLER_KILLED: {
                 this.handleBattlerKilled(event);
                 break;
@@ -199,6 +203,17 @@ export default class MainHW4Scene extends HW4Scene {
             }
         }
     }
+
+    protected handleDodge(): void {
+        //REVISIT
+        //TODO
+    }
+
+    protected handleDodgeOver(): void {
+        //REVISIT
+        //TODO
+    }
+
 
     protected handleAttack(player: PlayerActor, controller: PlayerController, type: string): void {
         // console.log('attack in main at', player.position.toString(), 'facing', controller.faceDir.toString());
@@ -311,13 +326,10 @@ export default class MainHW4Scene extends HW4Scene {
         this.getLayer("items").setDepth(2);
     }
 
-
-
-
     /**
      * Initializes the player in the scene
      */
-    protected initializePlayer(): void {
+    protected initializePlayer(): PlayerActor {
         let player = this.add.animatedSprite(PlayerActor, "player1", "primary");
         player.position.set(40, 40);
         player.battleGroup = 2;
@@ -344,115 +356,39 @@ export default class MainHW4Scene extends HW4Scene {
         player.addAI(PlayerAI);
 
         // Start the player in the "IDLE" animation
-        player.animation.play("IDLE");
+        player.animation.play("DOWN");
 
         this.battlers.push(player);
         this.viewport.follow(player);
+        return player;
     }
     /**
-     * Initialize the NPCs 
+     * Initialize the boss
      */
-    protected initializeNPCs(): void {
+    protected initializeBoss(): void {
+        let boss = this.add.animatedSprite(NPCActor, "Boss", "primary");
+        boss.position.set(250, 250);
+        boss.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
 
-        // Get the object data for the red enemies
-        let red = this.load.getObject("red");
+        // Give the NPC a healthbar
+        let healthbar = new HealthbarHUD(this, boss, "primary", {size: boss.size.clone().scaled(2, 1/2), offset: boss.size.clone().scaled(0, -1/2)});
+        this.healthbars.set(boss.id, healthbar);
+        
+        // Set the NPCs stats
+        boss.battleGroup = 1
+        boss.speed = 10;
+        boss.health = 1;
+        boss.maxHealth = 10;
+        boss.navkey = "navmesh";
 
-        // Initialize the red healers
-        for (let i = 0; i < red.healers.length; i++) {
-            let npc = this.add.animatedSprite(NPCActor, "RedHealer", "primary");
-            npc.position.set(red.healers[i][0], red.healers[i][1]);
-            npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
+        boss.addAI(GuardBehavior, {target: new BasicTargetable(this.actor), range: 100});
 
-            npc.battleGroup = 1;
-            npc.speed = 10;
-            npc.health = 10;
-            npc.maxHealth = 10;
-            npc.navkey = "navmesh";
-
-            // Give the NPC a healthbar
-            let healthbar = new HealthbarHUD(this, npc, "primary", {size: npc.size.clone().scaled(2, 1/2), offset: npc.size.clone().scaled(0, -1/2)});
-            this.healthbars.set(npc.id, healthbar);
-
-            npc.addAI(HealerBehavior);
-            npc.animation.play("IDLE");
-            this.battlers.push(npc);
-        }
-
-        for (let i = 0; i < red.enemies.length; i++) {
-            let npc = this.add.animatedSprite(NPCActor, "RedEnemy", "primary");
-            npc.position.set(red.enemies[i][0], red.enemies[i][1]);
-            npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
-
-            // Give the NPC a healthbar
-            let healthbar = new HealthbarHUD(this, npc, "primary", {size: npc.size.clone().scaled(2, 1/2), offset: npc.size.clone().scaled(0, -1/2)});
-            this.healthbars.set(npc.id, healthbar);
-            
-            // Set the NPCs stats
-            npc.battleGroup = 1
-            npc.speed = 10;
-            npc.health = 1;
-            npc.maxHealth = 10;
-            npc.navkey = "navmesh";
-
-            npc.addAI(GuardBehavior, {target: new BasicTargetable(new Position(npc.position.x, npc.position.y)), range: 100});
-
-            // Play the NPCs "IDLE" animation 
-            npc.animation.play("IDLE");
-            // Add the NPC to the battlers array
-            this.battlers.push(npc);
-        }
-
-        // Get the object data for the blue enemies
-        let blue = this.load.getObject("blue");
-
-        // Initialize the blue enemies
-        for (let i = 0; i < blue.enemies.length; i++) {
-            let npc = this.add.animatedSprite(NPCActor, "BlueEnemy", "primary");
-            npc.position.set(blue.enemies[i][0], blue.enemies[i][1]);
-            npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
-
-            // Give the NPCS their healthbars
-            let healthbar = new HealthbarHUD(this, npc, "primary", {size: npc.size.clone().scaled(2, 1/2), offset: npc.size.clone().scaled(0, -1/2)});
-            this.healthbars.set(npc.id, healthbar);
-
-            npc.battleGroup = 2
-            npc.speed = 10;
-            npc.health = 1;
-            npc.maxHealth = 10;
-            npc.navkey = "navmesh";
-
-            // Give the NPCs their AI
-            npc.addAI(GuardBehavior, {target: this.battlers[0], range: 100});
-
-            // Play the NPCs "IDLE" animation 
-            npc.animation.play("IDLE");
-
-            this.battlers.push(npc);
-        }
-
-        // Initialize the blue healers
-        for (let i = 0; i < blue.healers.length; i++) {
-            
-            let npc = this.add.animatedSprite(NPCActor, "BlueHealer", "primary");
-            npc.position.set(blue.healers[i][0], blue.healers[i][1]);
-            npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
-
-            npc.battleGroup = 2;
-            npc.speed = 10;
-            npc.health = 1;
-            npc.maxHealth = 10;
-            npc.navkey = "navmesh";
-
-            let healthbar = new HealthbarHUD(this, npc, "primary", {size: npc.size.clone().scaled(2, 1/2), offset: npc.size.clone().scaled(0, -1/2)});
-            this.healthbars.set(npc.id, healthbar);
-
-            npc.addAI(HealerBehavior);
-            npc.animation.play("IDLE");
-            this.battlers.push(npc);
-        }
-
-
+        // Play the NPCs "IDLE" animation 
+        boss.animation.play("DOWN");
+        // Add the NPC to the battlers array
+        this.battlers.push(boss);
     }
+
 
     /**
      * Initialize the items in the scene (healthpacks and laser guns)
