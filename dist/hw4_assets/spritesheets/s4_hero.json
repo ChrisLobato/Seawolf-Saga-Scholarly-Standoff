@@ -61,7 +61,7 @@
         },
         {
             "name": "DODGE_START",
-            "frames": [ {"index": 15, "duration": 2}, {"index": 16, "duration": 2}, {"index": 17, "duration": 2} ]
+            "frames": [ {"index": 15, "duration": 100}, {"index": 16, "duration": 100}, {"index": 17, "duration": 100} ]
         },
         {
             "name": "DODGE_END",

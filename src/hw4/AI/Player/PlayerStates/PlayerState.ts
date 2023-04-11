@@ -47,6 +47,8 @@ export default abstract class PlayerState extends State {
         this.receiver = new Receiver();
         this.receiver.subscribe(PlayerEvent.PLAYER_ATTACKED);
         this.receiver.subscribe(PlayerEvent.ATTACK_OVER);
+        this.receiver.subscribe(PlayerEvent.PLAYER_DODGED);
+        this.receiver.subscribe(PlayerEvent.DODGE_OVER);
         this.attackFlag = false;
     }
 
@@ -66,35 +68,36 @@ export default abstract class PlayerState extends State {
 
         // Adjust the angle the player is facing 
         //this.parent.owner.rotation = this.parent.controller.rotation;
-        if(this.parent.controller.rotation === 0) { 
-            if (this.attackFlag){
-                this.owner.animation.play("ATTACK_UP");
-            } else {
-                this.owner.animation.play("UP"); // UP
+        if (!(this.owner.animation.isPlaying("DODGE_START") || this.owner.animation.isPlaying("DODGE_END"))){
+            if(this.parent.controller.rotation === 0) { 
+                if (this.attackFlag){
+                    this.owner.animation.play("ATTACK_UP");
+                } else {
+                    this.owner.animation.play("UP"); // UP
+                }
             }
-        }
-        else if(this.parent.controller.rotation === Math.PI ){ 
-            if (this.attackFlag){
-                this.owner.animation.play("ATTACK_DOWN");
-            } else {
-                this.owner.animation.play("DOWN"); // DOWN
+            else if(this.parent.controller.rotation === Math.PI ){ 
+                if (this.attackFlag){
+                    this.owner.animation.play("ATTACK_DOWN");
+                } else {
+                    this.owner.animation.play("DOWN"); // DOWN
+                }
             }
-        }
-        else if(this.parent.controller.rotation === Math.PI/2 ){
-            if (this.attackFlag){
-                this.owner.animation.play("ATTACK_LEFT");
-            } else {
-                this.owner.animation.play("LEFT"); // LEFT
+            else if(this.parent.controller.rotation === Math.PI/2 ){
+                if (this.attackFlag){
+                    this.owner.animation.play("ATTACK_LEFT");
+                } else {
+                    this.owner.animation.play("LEFT"); // LEFT
+                }
             }
-        }
-        else {
-            if (this.attackFlag){
-                this.owner.animation.play("ATTACK_RIGHT");
-            } else {
-                this.owner.animation.play("RIGHT"); // RIGHT
+            else {
+                if (this.attackFlag){
+                    this.owner.animation.play("ATTACK_RIGHT");
+                } else {
+                    this.owner.animation.play("RIGHT"); // RIGHT
+                }
             }
-        }
-
+    }
 
         // Move the player
         this.parent.owner.move(this.parent.controller.moveDir);
@@ -116,12 +119,14 @@ export default abstract class PlayerState extends State {
 
         if(this.parent.controller.dodging && this.dodgeCharges > 1){
             // subtract a dodge charge
+            //this.owner.animation.play("DODGE_START", false, PlayerEvent.DODGE_OVER);
+            //console.log("Dodge Start");
             this.dodgeCharges = this.dodgeCharges - 1;
 
             let vec: Vec2 = Vec2.ZERO;
             vec = this.owner.position.vecTo(Input.getGlobalMousePosition());
             // limitting the range
-            const limitter =  150;
+            const limitter =  100;
             if(vec.x > limitter)
                 vec.x = limitter;
             else if(vec.x < -limitter)
@@ -139,6 +144,15 @@ export default abstract class PlayerState extends State {
     public override handleInput(event: GameEvent): void {
         
         switch(event.type) {
+            case PlayerEvent.PLAYER_DODGED: {
+
+                break;
+            }
+            case PlayerEvent.DODGE_OVER: {
+                //this.owner.animation.play("DODGE_END");
+                //console.log("Dodge Over");
+                break;
+            }
             case PlayerEvent.PLAYER_ATTACKED: {
                 this.attackFlag = true;
                 break;

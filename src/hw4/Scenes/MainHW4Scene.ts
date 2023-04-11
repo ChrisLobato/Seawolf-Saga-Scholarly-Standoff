@@ -139,6 +139,8 @@ export default class MainHW4Scene extends HW4Scene {
         this.receiver.subscribe(ItemEvent.ITEM_REQUEST);
         this.receiver.subscribe(PlayerEvent.PLAYER_ATTACKED);
         this.receiver.subscribe(PlayerEvent.ATTACK_OVER);
+        this.receiver.subscribe(PlayerEvent.PLAYER_DODGED);
+        this.receiver.subscribe(PlayerEvent.DODGE_OVER);
 
         // Add a UI for health
         this.addUILayer("health");
@@ -173,7 +175,7 @@ export default class MainHW4Scene extends HW4Scene {
                 this.handleAttackOver();
                 break;
             }
-            /*
+            
             case PlayerEvent.PLAYER_DODGED: {
                 this.handleDodge();
                 break;
@@ -182,7 +184,7 @@ export default class MainHW4Scene extends HW4Scene {
                 this.handleDodgeOver();
                 break;
             }
-            */
+            
             case BattlerEvent.BATTLER_KILLED: {
                 this.handleBattlerKilled(event);
                 break;
@@ -199,6 +201,17 @@ export default class MainHW4Scene extends HW4Scene {
             }
         }
     }
+
+    protected handleDodge(): void {
+        //REVISIT
+        //TODO
+    }
+
+    protected handleDodgeOver(): void {
+        //REVISIT
+        //TODO
+    }
+
 
     protected handleAttack(player: PlayerActor, controller: PlayerController, type: string): void {
         // console.log('attack in main at', player.position.toString(), 'facing', controller.faceDir.toString());
