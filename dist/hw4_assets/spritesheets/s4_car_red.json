@@ -1,0 +1,19 @@
+{
+    "name": "Red Car",
+    "spriteSheetImage": "s4_car_red.png",
+    "spriteWidth": 20,
+    "spriteHeight": 20,
+    "columns": 1,
+    "rows": 2,
+    "durationType": "time",
+    "animations": [
+        { 
+            "name": "RIGHT",
+            "frames": [ {"index": 0, "duration": 1} ]
+        },
+        {
+            "name": "LEFT",
+            "frames": [ {"index": 1, "duration": 1} ]
+        }
+    ]
+}

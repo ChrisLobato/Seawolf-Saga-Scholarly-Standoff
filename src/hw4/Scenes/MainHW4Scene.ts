@@ -88,7 +88,7 @@ export default class MainHW4Scene extends HW4Scene {
         this.load.spritesheet("player1", "hw4_assets/spritesheets/s4_hero.json");
 
         // Load in the enemy sprites
-        this.load.spritesheet("boss", "hw4_assets/spritesheets/s4_boss.json");
+        this.load.spritesheet("boss", "hw4_assets/spritesheets/s4_boss_v2.json");
 
         // Load the tilemap
         this.load.tilemap("level", "hw4_assets/tilemaps/boss_map_1.json");
