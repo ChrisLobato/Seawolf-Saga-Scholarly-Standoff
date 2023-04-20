@@ -102,7 +102,7 @@ export default class GuardBehavior extends NPCBehavior {
         let guard = new Idle(this, this.owner);
         guard.targets = [this.target];
         guard.targetFinder = new BasicFinder();
-        guard.addPrecondition(GuardStatuses.HAS_WEAPON);
+        // guard.addPrecondition(GuardStatuses.HAS_WEAPON);
         guard.addEffect(GuardStatuses.GOAL);
         guard.cost = 1000;
         this.addState(GuardActions.GUARD, guard);

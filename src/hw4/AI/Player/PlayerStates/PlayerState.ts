@@ -126,7 +126,7 @@ export default abstract class PlayerState extends State {
             let vec: Vec2 = Vec2.ZERO;
             vec = this.owner.position.vecTo(Input.getGlobalMousePosition());
             // limitting the range
-            const limitter =  100;
+            const limitter =  50;
             if(vec.x > limitter)
                 vec.x = limitter;
             else if(vec.x < -limitter)

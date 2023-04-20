@@ -88,7 +88,7 @@ export default class MainHW4Scene extends HW4Scene {
         this.load.spritesheet("player1", "hw4_assets/spritesheets/s4_hero.json");
 
         // Load in the enemy sprites
-        this.load.spritesheet("boss", "hw4_assets/spritesheets/s4_boss_v2.json");
+        this.load.spritesheet("boss", "hw4_assets/spritesheets/s4_boss.json");
 
         // Load the tilemap
         this.load.tilemap("level", "hw4_assets/tilemaps/boss_map_1.json");
@@ -137,7 +137,7 @@ export default class MainHW4Scene extends HW4Scene {
         // this.initializeNPCs();
 
         // Create the boss
-        //this.initializeBoss();
+        this.initializeBoss();
 
         // Subscribe to relevant events
         this.receiver.subscribe("healthpack");
@@ -211,8 +211,10 @@ export default class MainHW4Scene extends HW4Scene {
     protected handleDodge(): void {
         //REVISIT
         //TODO
-        this.DodgeIcons[this.currentDodge].visible = false;
-        this.currentDodge--;
+        if(this.currentDodge != 0){
+            this.DodgeIcons[this.currentDodge].visible = false;
+            this.currentDodge--;
+        }
     }
 
     protected handleDodgeOver(): void {
