@@ -1,6 +1,7 @@
 import NPCActor from "../../../Actors/NPCActor";
 import NPCBehavior from "../NPCBehavior";
 import Idle from "../NPCActions/GotoAction";
+import Attacking from "../NPCActions/Attack";
 import ShootLaserGun from "../NPCActions/ShootLaserGun";
 import BasicFinder from "../../../GameSystems/Searching/BasicFinder";
 import { BattlerActiveFilter, EnemyFilter, ItemFilter, RangeFilter, VisibleItemFilter } from "../../../GameSystems/Searching/HW4Filters";
@@ -16,6 +17,8 @@ import GameEvent from "../../../../Wolfie2D/Events/GameEvent";
 import GoapAction from "../../../../Wolfie2D/AI/Goap/GoapAction";
 import GoapState from "../../../../Wolfie2D/AI/Goap/GoapState";
 import Battler from "../../../GameSystems/BattleSystem/Battler";
+import { InRange } from "../NPCStatuses/InRange";
+
 
 
 export default class GuardBehavior extends NPCBehavior {
@@ -73,6 +76,9 @@ export default class GuardBehavior extends NPCBehavior {
 
         // Add the goal status 
         this.addStatus(GuardStatuses.GOAL, new FalseStatus());
+
+        //attack
+        this.addStatus(GuardStatuses.IN_RANGE, new InRange(this.owner, this.target));
     }
 
     protected initializeActions(): void {
@@ -104,8 +110,17 @@ export default class GuardBehavior extends NPCBehavior {
         guard.targetFinder = new BasicFinder();
         // guard.addPrecondition(GuardStatuses.HAS_WEAPON);
         guard.addEffect(GuardStatuses.GOAL);
+        guard.addEffect(GuardStatuses.IN_RANGE);
         guard.cost = 1000;
         this.addState(GuardActions.GUARD, guard);
+
+        let attack = new Attacking(this, this.owner);
+        attack.targets = [this.owner];
+        attack.targetFinder = new BasicFinder();
+        attack.addPrecondition(GuardStatuses.IN_RANGE);
+        attack.addEffect(GuardStatuses.GOAL);
+        attack.cost = 10;
+        this.addState(GuardActions.ATTACK, attack);
     }
 
     public override addState(stateName: GuardAction, state: GoapAction): void {
@@ -131,7 +146,9 @@ export const GuardStatuses = {
 
     LASERGUN_EXISTS: "laser-gun-exists",
 
-    GOAL: "goal"
+    GOAL: "goal",
+
+    IN_RANGE: "in-range"
 
 } as const;
 
@@ -143,6 +160,8 @@ export const GuardActions = {
     SHOOT_ENEMY: "shoot-enemy",
 
     GUARD: "guard",
+
+    ATTACK: "attack"
 
 } as const;
 

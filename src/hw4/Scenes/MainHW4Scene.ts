@@ -23,7 +23,7 @@ import GuardBehavior from "../AI/NPC/NPCBehavior/GaurdBehavior";
 import HealerBehavior from "../AI/NPC/NPCBehavior/HealerBehavior";
 import PlayerAI from "../AI/Player/PlayerAI";
 import PlayerController from "../AI/Player/PlayerController";
-import { ItemEvent, PlayerEvent, BattlerEvent } from "../Events";
+import { ItemEvent, PlayerEvent, BattlerEvent, BossEvent } from "../Events";
 import Battler from "../GameSystems/BattleSystem/Battler";
 import BattlerBase from "../GameSystems/BattleSystem/BattlerBase";
 import HealthbarHUD from "../GameSystems/HUD/HealthbarHUD";
@@ -145,6 +145,8 @@ export default class MainHW4Scene extends HW4Scene {
         this.receiver.subscribe(ItemEvent.ITEM_REQUEST);
         this.receiver.subscribe(PlayerEvent.PLAYER_ATTACKED);
         this.receiver.subscribe(PlayerEvent.ATTACK_OVER);
+        this.receiver.subscribe(BossEvent.BOSS_ATTACKED);
+        this.receiver.subscribe(BossEvent.BOSS_ATTACK_OVER);
         this.receiver.subscribe(PlayerEvent.PLAYER_DODGED);
         this.receiver.subscribe(PlayerEvent.DODGE_OVER);
 
@@ -181,7 +183,14 @@ export default class MainHW4Scene extends HW4Scene {
                 this.handleAttackOver();
                 break;
             }
-            
+            case BossEvent.BOSS_ATTACKED: {
+                this.handleBossAttack();
+                break;
+            }
+            case BossEvent.BOSS_ATTACK_OVER: {
+                this.handleBossAttackOver();
+                break;
+            }
             case PlayerEvent.PLAYER_DODGED: {
                 this.handleDodge();
                 break;
@@ -190,7 +199,7 @@ export default class MainHW4Scene extends HW4Scene {
                 this.handleDodgeOver();
                 break;
             }
-            
+
             case BattlerEvent.BATTLER_KILLED: {
                 this.handleBattlerKilled(event);
                 break;
@@ -203,7 +212,7 @@ export default class MainHW4Scene extends HW4Scene {
                 break;
             }
             default: {
-                throw new Error(`Unhandled event type "${event.type}" caught in HW3Scene event handler`);
+                throw new Error(`Unhandled event type "${event.type}" caught in SeawolfSaga event handler`);
             }
         }
     }
@@ -225,6 +234,7 @@ export default class MainHW4Scene extends HW4Scene {
 
     protected handleAttack(player: PlayerActor, controller: PlayerController, type: string): void {
         // console.log('attack in main at', player.position.toString(), 'facing', controller.faceDir.toString());
+        console.log("handle attack called");
         
         // REVISIT random values for testing
         let attackWidth = 0;
@@ -298,6 +308,16 @@ export default class MainHW4Scene extends HW4Scene {
     protected handleAttackOver(): void {
         console.log("ATTACK OVER");
         this.attackMarker.visible = false;
+    }
+
+    protected handleBossAttack(): void {
+        console.log("BOSS ATTACKS");
+
+    }
+
+    protected handleBossAttackOver(): void {
+        console.log("BOSS ATTACK OVER");
+
     }
 
     protected handleItemRequest(node: GameNode, inventory: Inventory): void {

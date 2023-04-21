@@ -28,3 +28,10 @@ export enum PlayerEvent {
     PLAYER_ATTACKED = "PLAYER_ATTACKED",
     ATTACK_OVER = "ATTACK_OVER"
 }
+
+
+export enum BossEvent {
+    BOSS_KILLED = "BOSS_KILLED",
+    BOSS_ATTACKED = "BOSS_ATTACKED",
+    BOSS_ATTACK_OVER = "BOSS_ATTACK_OVER"
+}
