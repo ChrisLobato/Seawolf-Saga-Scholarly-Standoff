@@ -344,6 +344,8 @@ export default class MainHW4Scene extends HW4Scene {
         let player = this.add.animatedSprite(PlayerActor, "player1", "primary");
         player.position.set(40, 40);
         player.battleGroup = 2;
+        //Scale the player sprite to be 1.5x the size of the tile
+        player.scale.set(1.5, 1.5);
 
         player.health = 4;
         player.maxHealth = 4;
@@ -419,6 +421,7 @@ export default class MainHW4Scene extends HW4Scene {
      */
     protected initializeBoss(): void {
         let boss = this.add.animatedSprite(NPCActor, "boss", "primary");
+        boss.scale.set(1.5, 1.5);
         boss.position.set(200, 200);
         boss.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
         boss.battleGroup = 2
