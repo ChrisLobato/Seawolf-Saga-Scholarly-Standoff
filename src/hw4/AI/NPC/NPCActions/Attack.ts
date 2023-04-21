@@ -28,7 +28,7 @@ export default class Attack extends NPCAction {
         if(!this.isAttacking){
             console.log("ATTACKING");
             this.isAttacking = true;
-            this.emitter.fireEvent(BossEvent.BOSS_ATTACKED, {position: this.actor.position});
+            this.emitter.fireEvent(BossEvent.BOSS_ATTACKED, {actor: this.actor});
             this.attackTimer.start();
         }
 

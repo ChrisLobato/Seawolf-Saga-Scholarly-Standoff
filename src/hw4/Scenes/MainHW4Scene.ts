@@ -69,6 +69,11 @@ export default class MainHW4Scene extends HW4Scene {
     private graph: PositionGraph;
 
     private attackMarker: Graphic;
+    private attackMarker2: Graphic;
+
+    private bossAttackDelayer: Timer;
+    private bossPasser: NPCActor;
+
 
     public constructor(viewport: Viewport, sceneManager: SceneManager, renderingManager: RenderingManager, options: Record<string, any>) {
         super(viewport, sceneManager, renderingManager, options);
@@ -150,6 +155,8 @@ export default class MainHW4Scene extends HW4Scene {
         this.receiver.subscribe(PlayerEvent.PLAYER_DODGED);
         this.receiver.subscribe(PlayerEvent.DODGE_OVER);
 
+        this.bossAttackDelayer = new Timer(200, this.bridger);
+
         // Add a UI for health
         this.addUILayer("health");
 
@@ -184,7 +191,7 @@ export default class MainHW4Scene extends HW4Scene {
                 break;
             }
             case BossEvent.BOSS_ATTACKED: {
-                this.handleBossAttack();
+                this.handleBossAttack(event.data.get("actor"));
                 break;
             }
             case BossEvent.BOSS_ATTACK_OVER: {
@@ -310,14 +317,52 @@ export default class MainHW4Scene extends HW4Scene {
         this.attackMarker.visible = false;
     }
 
-    protected handleBossAttack(): void {
-        console.log("BOSS ATTACKS");
+    protected handleBossAttackTimer(actor: NPCActor): void {
+        console.log("actor0:", actor);
+        this.bossPasser = actor;
+        
+        console.log("bossPasser0:", this.bossPasser);
+        this.bossAttackDelayer.start();
+    }
+
+    protected bridger(): void {
+    }
+
+    protected handleBossAttack(actor: NPCActor): void {
+        // can pass in the player from target in guardbehavior
+        let position = actor.position;
+        console.log("BOSS ATTACKS AT", position.toString());
+        let damageSource = position;
+        let attackWidth = 100;
+        let attackLength = 50;
+
+        this.attackMarker2 = <Rect>this.add.graphic(GraphicType.RECT, "primary", { position: damageSource,
+            size: new Vec2(attackWidth, attackLength)});
+        this.attackMarker2.color = new Color(255, 255, 0, .20);
+        this.attackMarker2.visible = true;
+
+        let left = damageSource.x - attackWidth;
+        let right = damageSource.x + attackWidth;
+        let top = damageSource.y - attackLength;
+        let bottom = damageSource.y + attackLength;
+        for(let i = 0; i < this.battlers.length; i++){
+            if(this.battlers[i].position.x < right &&
+                this.battlers[i].position.x > left &&
+                this.battlers[i].position.y > top &&
+                this.battlers[i].position.y < bottom){
+                if(this.battlers[i].id != actor.id){ // prevents the boss from hitting themselves
+                    console.log("this battler was hit:", this.battlers[i].id); 
+                    // DEAL DAMAGE TO THIS PLAYER!
+                }
+                
+            }
+        }
 
     }
 
     protected handleBossAttackOver(): void {
         console.log("BOSS ATTACK OVER");
-
+        this.attackMarker2.visible = false;
     }
 
     protected handleItemRequest(node: GameNode, inventory: Inventory): void {
