@@ -33,5 +33,6 @@ export enum PlayerEvent {
 export enum BossEvent {
     BOSS_KILLED = "BOSS_KILLED",
     BOSS_ATTACKED = "BOSS_ATTACKED",
+    BOSS_ATTACK_FIRE = "BOSS_ATTACKED_FIRE",
     BOSS_ATTACK_OVER = "BOSS_ATTACK_OVER"
 }
