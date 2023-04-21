@@ -283,16 +283,18 @@ export default class MainHW4Scene extends HW4Scene {
             damageSource.x += distanceAdder; // RIGHT
         }
 
-        
+        let damage = 0;
         if(type === "light") {
             this.attackMarker = <Rect>this.add.graphic(GraphicType.RECT, "primary", { position: damageSource, 
                 size: new Vec2(attackWidth, attackLength)});
             this.attackMarker.color = new Color(255, 0, 255, .20);
+            damage = .1;
         }
         else if(type === "heavy") {
             this.attackMarker = <Rect>this.add.graphic(GraphicType.RECT, "primary", { position: damageSource,
                 size: new Vec2(attackWidth, attackLength)});
             this.attackMarker.color = new Color(255, 255, 0, .20);
+            damage = .2;
         }
         
 
@@ -310,7 +312,7 @@ export default class MainHW4Scene extends HW4Scene {
                 this.battlers[i].position.y > top &&
                 this.battlers[i].position.y < bottom){
                 if(this.battlers[i].id != player.id){ // prevents the player from hitting themselves
-                    this.dealDamage(this.battlers[i]);
+                    this.dealDamage(this.battlers[i], damage);
                 }
                 
             }
@@ -359,7 +361,7 @@ export default class MainHW4Scene extends HW4Scene {
                 this.battlers[i].position.y > top &&
                 this.battlers[i].position.y < bottom){
                 if(this.battlers[i].id != actor.id){ // prevents the boss from hitting themselves
-                    this.dealDamage(this.battlers[i]);
+                    this.dealDamage(this.battlers[i], 1);
                 }
                 
             }
@@ -367,8 +369,11 @@ export default class MainHW4Scene extends HW4Scene {
 
     }
 
-    protected dealDamage(battler: Battler & Actor) {
+    protected dealDamage(battler: Battler & Actor, damage: number) {
+        console.log("battler health before:", battler.health);
         console.log("this battler took damage:", battler.id);
+        battler.health-= damage;
+        console.log("battler health after:", battler.health);
 
     }
 
