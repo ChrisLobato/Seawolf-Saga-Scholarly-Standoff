@@ -38,6 +38,7 @@ import Position from "../GameSystems/Targeting/Position";
 import AstarStrategy from "../Pathfinding/AstarStrategy";
 import HW4Scene from "./HW4Scene";
 import Sprite from "../../Wolfie2D/Nodes/Sprites/Sprite";
+import Emitter from "../../Wolfie2D/Events/Emitter";
 const BattlerGroups = {
     RED: 1,
     BLUE: 2
@@ -151,11 +152,12 @@ export default class MainHW4Scene extends HW4Scene {
         this.receiver.subscribe(PlayerEvent.PLAYER_ATTACKED);
         this.receiver.subscribe(PlayerEvent.ATTACK_OVER);
         this.receiver.subscribe(BossEvent.BOSS_ATTACKED);
+        this.receiver.subscribe(BossEvent.BOSS_ATTACK_FIRE);
         this.receiver.subscribe(BossEvent.BOSS_ATTACK_OVER);
         this.receiver.subscribe(PlayerEvent.PLAYER_DODGED);
         this.receiver.subscribe(PlayerEvent.DODGE_OVER);
 
-        this.bossAttackDelayer = new Timer(200, this.bridger);
+        this.bossAttackDelayer = new Timer(500, this.bridger);
 
         // Add a UI for health
         this.addUILayer("health");
@@ -191,7 +193,11 @@ export default class MainHW4Scene extends HW4Scene {
                 break;
             }
             case BossEvent.BOSS_ATTACKED: {
-                this.handleBossAttack(event.data.get("actor"));
+                this.handleBossAttackTimer(event.data.get("actor"));
+                break;
+            }
+            case BossEvent.BOSS_ATTACK_FIRE: {
+                this.handleBossAttack();
                 break;
             }
             case BossEvent.BOSS_ATTACK_OVER: {
@@ -304,8 +310,7 @@ export default class MainHW4Scene extends HW4Scene {
                 this.battlers[i].position.y > top &&
                 this.battlers[i].position.y < bottom){
                 if(this.battlers[i].id != player.id){ // prevents the player from hitting themselves
-                    console.log("this battler was hit:", this.battlers[i].id); 
-                    // DEAL DAMAGE TO THIS PLAYER!
+                    this.dealDamage(this.battlers[i]);
                 }
                 
             }
@@ -313,32 +318,35 @@ export default class MainHW4Scene extends HW4Scene {
     }
 
     protected handleAttackOver(): void {
-        console.log("ATTACK OVER");
         this.attackMarker.visible = false;
     }
 
     protected handleBossAttackTimer(actor: NPCActor): void {
-        console.log("actor0:", actor);
-        this.bossPasser = actor;
-        
-        console.log("bossPasser0:", this.bossPasser);
+        //timers are cringe, they change the context of `this`, so I will store the data
+        // then fire an event when the timer ends, and that event will read the stored data
+        // and be able to act under the proper `this` context
+        this.bossPasser = actor; 
         this.bossAttackDelayer.start();
     }
 
     protected bridger(): void {
+        // `this` here reffers to the timer itself or something weird like that,
+        // so instead I just fire an event so it can be handled in the original this
+        let emitter = new Emitter();
+        emitter.fireEvent(BossEvent.BOSS_ATTACK_FIRE)
     }
 
-    protected handleBossAttack(actor: NPCActor): void {
+    protected handleBossAttack(): void {
         // can pass in the player from target in guardbehavior
+        let actor = this.bossPasser;
         let position = actor.position;
-        console.log("BOSS ATTACKS AT", position.toString());
         let damageSource = position;
         let attackWidth = 100;
         let attackLength = 50;
 
         this.attackMarker2 = <Rect>this.add.graphic(GraphicType.RECT, "primary", { position: damageSource,
             size: new Vec2(attackWidth, attackLength)});
-        this.attackMarker2.color = new Color(255, 255, 0, .20);
+        this.attackMarker2.color = new Color(255, 0, 0, .20);
         this.attackMarker2.visible = true;
 
         let left = damageSource.x - attackWidth;
@@ -351,8 +359,7 @@ export default class MainHW4Scene extends HW4Scene {
                 this.battlers[i].position.y > top &&
                 this.battlers[i].position.y < bottom){
                 if(this.battlers[i].id != actor.id){ // prevents the boss from hitting themselves
-                    console.log("this battler was hit:", this.battlers[i].id); 
-                    // DEAL DAMAGE TO THIS PLAYER!
+                    this.dealDamage(this.battlers[i]);
                 }
                 
             }
@@ -360,8 +367,12 @@ export default class MainHW4Scene extends HW4Scene {
 
     }
 
+    protected dealDamage(battler: Battler & Actor) {
+        console.log("this battler took damage:", battler.id);
+
+    }
+
     protected handleBossAttackOver(): void {
-        console.log("BOSS ATTACK OVER");
         this.attackMarker2.visible = false;
     }
 
