@@ -39,6 +39,7 @@ import AstarStrategy from "../Pathfinding/AstarStrategy";
 import HW4Scene from "./HW4Scene";
 import Sprite from "../../Wolfie2D/Nodes/Sprites/Sprite";
 import Emitter from "../../Wolfie2D/Events/Emitter";
+import AnimatedSprite from "../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
 const BattlerGroups = {
     RED: 1,
     BLUE: 2
@@ -50,7 +51,7 @@ export default class MainHW4Scene extends HW4Scene {
     private inventoryHud: InventoryHUD;
 
     /** All the battlers in the HW3Scene (including the player) */
-    private battlers: (Battler & Actor)[];
+    private battlers: (AnimatedSprite & Battler)[];
     /** Healthbars for the battlers */
     private healthbars: Map<number, HealthbarHUD>;
 
@@ -79,7 +80,7 @@ export default class MainHW4Scene extends HW4Scene {
     public constructor(viewport: Viewport, sceneManager: SceneManager, renderingManager: RenderingManager, options: Record<string, any>) {
         super(viewport, sceneManager, renderingManager, options);
 
-        this.battlers = new Array<Battler & Actor>();
+        this.battlers = new Array<AnimatedSprite & Battler>();
         this.healthbars = new Map<number, HealthbarHUD>();
 
         this.laserguns = new Array<LaserGun>();
@@ -157,7 +158,9 @@ export default class MainHW4Scene extends HW4Scene {
         this.receiver.subscribe(PlayerEvent.PLAYER_DODGED);
         this.receiver.subscribe(PlayerEvent.DODGE_OVER);
 
-        this.bossAttackDelayer = new Timer(500, this.bridger);
+        // REVISIT, change as you would like, make SURE it never is longer
+        // than the timer in the attack.ts action file
+        this.bossAttackDelayer = new Timer(1750, this.bridger);
 
         // Add a UI for health
         this.addUILayer("health");
@@ -232,7 +235,6 @@ export default class MainHW4Scene extends HW4Scene {
 
     protected handleDodge(): void {
         //REVISIT
-        //TODO
         if(this.currentDodge != 0){
             this.DodgeIcons[this.currentDodge].visible = false;
             this.currentDodge--;
@@ -241,7 +243,6 @@ export default class MainHW4Scene extends HW4Scene {
 
     protected handleDodgeOver(): void {
         //REVISIT
-        //TODO
     }
 
 
@@ -250,18 +251,18 @@ export default class MainHW4Scene extends HW4Scene {
         console.log("handle attack called");
         
         // REVISIT random values for testing
-        let attackWidth = 0;
-        let attackLength = 0;
+        let halfAttackWidth = 0;
+        let halfAttackLength = 0;
         let distanceAdder = 0;
         if(type === "light"){
-            attackWidth = 20;
-            attackLength = 20;
+            halfAttackWidth = 10;
+            halfAttackLength = 10;
             distanceAdder = 20;
         }
         else if(type === "heavy") {
-            attackWidth = 40;
-            attackLength = 40;
-            distanceAdder = 30;
+            halfAttackWidth = 20;
+            halfAttackLength = 20;
+            distanceAdder = 40;
         }
 
         // making sure player position is unchanged
@@ -286,15 +287,15 @@ export default class MainHW4Scene extends HW4Scene {
         let damage = 0;
         if(type === "light") {
             this.attackMarker = <Rect>this.add.graphic(GraphicType.RECT, "primary", { position: damageSource, 
-                size: new Vec2(attackWidth, attackLength)});
+                size: new Vec2(halfAttackWidth*2, halfAttackLength*2)});
             this.attackMarker.color = new Color(255, 0, 255, .20);
-            damage = .1;
+            damage = .120001; // 00001 to avoid rounding down error
         }
         else if(type === "heavy") {
             this.attackMarker = <Rect>this.add.graphic(GraphicType.RECT, "primary", { position: damageSource,
-                size: new Vec2(attackWidth, attackLength)});
+                size: new Vec2(halfAttackWidth*2, halfAttackLength*2)});
             this.attackMarker.color = new Color(255, 255, 0, .20);
-            damage = .2;
+            damage = .200001; // 00001 to avoid rounding down error
         }
         
 
@@ -302,19 +303,18 @@ export default class MainHW4Scene extends HW4Scene {
 
 
         // can probably use a shape, this is really just a test implimentation
-        let left = damageSource.x - attackWidth;
-        let right = damageSource.x + attackWidth;
-        let top = damageSource.y - attackLength;
-        let bottom = damageSource.y + attackLength;
+        let left = damageSource.x - halfAttackWidth;
+        let right = damageSource.x + halfAttackWidth;
+        let top = damageSource.y - halfAttackLength;
+        let bottom = damageSource.y + halfAttackLength;
         for(let i = 0; i < this.battlers.length; i++){
-            if(this.battlers[i].position.x < right &&
-                this.battlers[i].position.x > left &&
-                this.battlers[i].position.y > top &&
-                this.battlers[i].position.y < bottom){
-                if(this.battlers[i].id != player.id){ // prevents the player from hitting themselves
-                    this.dealDamage(this.battlers[i], damage);
-                }
-                
+            let b = this.battlers[i];
+            if(b.id != player.id && // prevents the player from hitting themselves
+                b.position.x - (b.size.x/2) < right &&
+                b.position.x + (b.size.x/2)> left &&
+                b.position.y + (b.size.y/2) > top &&
+                b.position.y - (b.size.y/2) < bottom) {
+                    this.dealDamage(b, damage);
             }
         }
     }
@@ -343,33 +343,32 @@ export default class MainHW4Scene extends HW4Scene {
         let actor = this.bossPasser;
         let position = actor.position;
         let damageSource = position;
-        let attackWidth = 100;
-        let attackLength = 50;
+        let halfAttackWidth = 50;
+        let halfAttackLength = 25;
 
         this.attackMarker2 = <Rect>this.add.graphic(GraphicType.RECT, "primary", { position: damageSource,
-            size: new Vec2(attackWidth, attackLength)});
+            size: new Vec2(halfAttackWidth*2, halfAttackLength*2)});
         this.attackMarker2.color = new Color(255, 0, 0, .20);
         this.attackMarker2.visible = true;
 
-        let left = damageSource.x - attackWidth;
-        let right = damageSource.x + attackWidth;
-        let top = damageSource.y - attackLength;
-        let bottom = damageSource.y + attackLength;
+        let left = damageSource.x - halfAttackWidth;
+        let right = damageSource.x + halfAttackWidth;
+        let top = damageSource.y - halfAttackLength;
+        let bottom = damageSource.y + halfAttackLength;
         for(let i = 0; i < this.battlers.length; i++){
-            if(this.battlers[i].position.x < right &&
-                this.battlers[i].position.x > left &&
-                this.battlers[i].position.y > top &&
-                this.battlers[i].position.y < bottom){
-                if(this.battlers[i].id != actor.id){ // prevents the boss from hitting themselves
-                    this.dealDamage(this.battlers[i], 1);
-                }
-                
+            let b = this.battlers[i];
+            if(b.id != actor.id && // prevents the boss from hitting themselves
+                b.position.x - (b.size.x/2) < right &&
+                b.position.x + (b.size.x/2)> left &&
+                b.position.y + (b.size.y/2) > top &&
+                b.position.y - (b.size.y/2) < bottom) { 
+                    this.dealDamage(b, 1);
             }
         }
 
     }
 
-    protected dealDamage(battler: Battler & Actor, damage: number) {
+    protected dealDamage(battler: AnimatedSprite & Battler, damage: number) {
         console.log("battler health before:", battler.health);
         console.log("this battler took damage:", battler.id);
         battler.health-= damage;
@@ -493,7 +492,6 @@ export default class MainHW4Scene extends HW4Scene {
 
         // Start the player in the "IDLE" animation
         player.animation.play("DOWN");
-
         this.battlers.push(player);
         this.viewport.follow(player);
     }

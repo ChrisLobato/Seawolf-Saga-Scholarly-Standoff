@@ -18,8 +18,9 @@ export default class Attack extends NPCAction {
     public constructor(parent: NPCBehavior, actor: NPCActor) {
         super(parent, actor);
         this.isAttacking = false;
-      
-        this.attackTimer = new Timer(2000, this.attackOver);
+        
+        // REVISIT, change as you will, make sure the bridge/bossattackdelay timer
+        // is never shorter than this timer is, will cause unexpected behavior
         this.attackTimer = new Timer(2000, this.attackOver);
         
     }    
