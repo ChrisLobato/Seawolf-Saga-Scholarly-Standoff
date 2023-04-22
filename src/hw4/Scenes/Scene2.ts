@@ -387,7 +387,7 @@ export default class MainHW4Scene extends HW4Scene {
                 b.position.x + (b.size.x/2)> left &&
                 b.position.y + (b.size.y/2) > top &&
                 b.position.y - (b.size.y/2) < bottom) { 
-                    this.dealDamage(b, 1);
+                    this.dealDamage(b, 3);
             }
         }
 
@@ -423,7 +423,7 @@ export default class MainHW4Scene extends HW4Scene {
         let size = this.viewport.getHalfSize();
         this.viewport.setFocus(size);
         this.viewport.setZoomLevel(1);
-        this.sceneManager.changeToScene(Scene2);
+        this.sceneManager.changeToScene(MainMenu);
     }
     protected handleSceneEndLose (): void {
         // recentering the viewport
@@ -581,8 +581,8 @@ export default class MainHW4Scene extends HW4Scene {
         boss.position.set(200, 200);
         boss.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
         boss.battleGroup = 2
-        boss.speed = 10;
-        boss.health = 10;
+        boss.speed = 20;
+        boss.health = 1;
         boss.maxHealth = 10;
         boss.navkey = "navmesh";
         // Give the NPC a healthbar

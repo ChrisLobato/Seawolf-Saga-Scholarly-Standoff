@@ -38,5 +38,6 @@ export enum BossEvent {
 }
 
 export enum SceneEvents {
-    END_SCENE_1 = "END_SCENE_!"
+    END_SCENE_0 = "END_SCENE_0",
+    END_SCENE_1 = "END_SCENE_1"
 }
