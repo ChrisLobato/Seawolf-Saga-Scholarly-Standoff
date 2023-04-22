@@ -23,7 +23,7 @@ import GuardBehavior from "../AI/NPC/NPCBehavior/GaurdBehavior";
 import HealerBehavior from "../AI/NPC/NPCBehavior/HealerBehavior";
 import PlayerAI from "../AI/Player/PlayerAI";
 import PlayerController from "../AI/Player/PlayerController";
-import { ItemEvent, PlayerEvent, BattlerEvent, BossEvent } from "../Events";
+import { ItemEvent, PlayerEvent, BattlerEvent, BossEvent, SceneEvents } from "../Events";
 import Battler from "../GameSystems/BattleSystem/Battler";
 import BattlerBase from "../GameSystems/BattleSystem/BattlerBase";
 import HealthbarHUD from "../GameSystems/HUD/HealthbarHUD";
@@ -40,6 +40,8 @@ import HW4Scene from "./HW4Scene";
 import Sprite from "../../Wolfie2D/Nodes/Sprites/Sprite";
 import Emitter from "../../Wolfie2D/Events/Emitter";
 import AnimatedSprite from "../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
+import MainMenu from "./MainMenu";
+
 const BattlerGroups = {
     RED: 1,
     BLUE: 2
@@ -52,6 +54,9 @@ export default class MainHW4Scene extends HW4Scene {
 
     /** All the battlers in the HW3Scene (including the player) */
     private battlers: (AnimatedSprite & Battler)[];
+    private player: AnimatedSprite;
+    private boss: AnimatedSprite;
+    
     /** Healthbars for the battlers */
     private healthbars: Map<number, HealthbarHUD>;
 
@@ -74,6 +79,7 @@ export default class MainHW4Scene extends HW4Scene {
     private attackMarker2: Graphic;
 
     private bossAttackDelayer: Timer;
+    private sceneEndDelayer: Timer;
     private bossPasser: NPCActor;
 
 
@@ -158,9 +164,13 @@ export default class MainHW4Scene extends HW4Scene {
         this.receiver.subscribe(PlayerEvent.PLAYER_DODGED);
         this.receiver.subscribe(PlayerEvent.DODGE_OVER);
 
+        this.receiver.subscribe(SceneEvents.END_SCENE_1);
+
         // REVISIT, change as you would like, make SURE it never is longer
         // than the timer in the attack.ts action file
-        this.bossAttackDelayer = new Timer(1750, this.bridger);
+        this.bossAttackDelayer = new Timer(1000, this.bridger);
+
+        this.sceneEndDelayer = new Timer(2000, this.sceneEnder);
 
         // Add a UI for health
         this.addUILayer("health");
@@ -215,6 +225,10 @@ export default class MainHW4Scene extends HW4Scene {
                 this.handleDodgeOver();
                 break;
             }
+            case SceneEvents.END_SCENE_1: {
+                this.handleSceneEnd();
+                break;
+            }
 
             case BattlerEvent.BATTLER_KILLED: {
                 this.handleBattlerKilled(event);
@@ -227,6 +241,8 @@ export default class MainHW4Scene extends HW4Scene {
                 this.handleItemRequest(event.data.get("node"), event.data.get("inventory"));
                 break;
             }
+
+       
             default: {
                 throw new Error(`Unhandled event type "${event.type}" caught in SeawolfSaga event handler`);
             }
@@ -335,7 +351,7 @@ export default class MainHW4Scene extends HW4Scene {
         // `this` here reffers to the timer itself or something weird like that,
         // so instead I just fire an event so it can be handled in the original this
         let emitter = new Emitter();
-        emitter.fireEvent(BossEvent.BOSS_ATTACK_FIRE)
+        emitter.fireEvent(BossEvent.BOSS_ATTACK_FIRE);
     }
 
     protected handleBossAttack(): void {
@@ -368,6 +384,10 @@ export default class MainHW4Scene extends HW4Scene {
 
     }
 
+    protected handleBossAttackOver(): void {
+        this.attackMarker2.visible = false;
+    }
+
     protected dealDamage(battler: AnimatedSprite & Battler, damage: number) {
         console.log("battler health before:", battler.health);
         console.log("this battler took damage:", battler.id);
@@ -376,8 +396,19 @@ export default class MainHW4Scene extends HW4Scene {
 
     }
 
-    protected handleBossAttackOver(): void {
-        this.attackMarker2.visible = false;
+    protected sceneEnder(): void {
+        console.log("triggering ending...");
+        let emitter = new Emitter();
+        emitter.fireEvent(SceneEvents.END_SCENE_1);
+    }
+
+    protected handleSceneEnd (): void {
+        console.log("changing scenes to help");
+        const center = this.viewport.getCenter();
+        let size = this.viewport.getHalfSize();
+        this.viewport.setFocus(size);
+        this.viewport.setZoomLevel(1);
+        this.sceneManager.changeToScene(MainMenu);
     }
 
     protected handleItemRequest(node: GameNode, inventory: Inventory): void {
@@ -396,6 +427,27 @@ export default class MainHW4Scene extends HW4Scene {
      */
     protected handleBattlerKilled(event: GameEvent): void {
         let id: number = event.data.get("id");
+        console.log("this battler was killed:", id);
+        
+        if(id === this.player.id){
+            console.log("player killed! Ending");
+            this.sceneEndDelayer.start();
+            // this marks it as dead for the guardbehavior, prob a better way to do this
+            this.player.position.x = 2000;
+            this.player.position.y = 2000;
+            // TODO death animation
+            // this.emitter.fireEvent(PlayerEvent.PLAYER_KILLED);
+        }
+        else if (id === this.boss.id) {
+            console.log("Boss killed! Ending");
+            // TODO death animation
+            // this.emitter.fireEvent(BossEvent.BOSS_KILLED);
+            this.sceneEndDelayer.start();
+            
+        }
+        // IMPORTANT !
+        // TODO cause this to happen after player death animation plays!
+
         let battler = this.battlers.find(b => b.id === id);
 
         if (battler) {
@@ -490,6 +542,8 @@ export default class MainHW4Scene extends HW4Scene {
         // Give the player PlayerAI
         player.addAI(PlayerAI);
 
+        this.player = player;
+
         // Start the player in the "IDLE" animation
         player.animation.play("DOWN");
         this.battlers.push(player);
@@ -514,6 +568,7 @@ export default class MainHW4Scene extends HW4Scene {
 
         // Give the NPCs their AI
         boss.addAI(GuardBehavior, {target: this.battlers[0], range: 100});
+        this.boss = boss;
         // Play the NPCs "IDLE" animation 
         boss.animation.play("DOWN");
         this.battlers.push(boss);

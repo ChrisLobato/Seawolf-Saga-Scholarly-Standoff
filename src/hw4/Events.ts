@@ -36,3 +36,7 @@ export enum BossEvent {
     BOSS_ATTACK_FIRE = "BOSS_ATTACKED_FIRE",
     BOSS_ATTACK_OVER = "BOSS_ATTACK_OVER"
 }
+
+export enum SceneEvents {
+    END_SCENE_1 = "END_SCENE_!"
+}

@@ -21,7 +21,7 @@ export default class Attack extends NPCAction {
         
         // REVISIT, change as you will, make sure the bridge/bossattackdelay timer
         // is never shorter than this timer is, will cause unexpected behavior
-        this.attackTimer = new Timer(2000, this.attackOver);
+        this.attackTimer = new Timer(1250, this.attackOver);
         
     }    
     
