@@ -39,17 +39,19 @@ export default abstract class PlayerState extends State {
 
     protected dodgeCharges: number;
     protected attackFlag: boolean;
+    private dodgedTimer: Timer;
 
     public constructor(parent: PlayerAI, owner: PlayerActor) {
         super(parent);
         this.owner = owner;
-        this.dodgeCharges = 3;
-        this.receiver = new Receiver();
+        this.dodgeCharges = 4;
+        this.receiver = new Receiver(); //might need to initialize an emitter as well
         this.receiver.subscribe(PlayerEvent.PLAYER_ATTACKED);
         this.receiver.subscribe(PlayerEvent.ATTACK_OVER);
         this.receiver.subscribe(PlayerEvent.PLAYER_DODGED);
         this.receiver.subscribe(PlayerEvent.DODGE_OVER);
         this.attackFlag = false;
+        this.dodgedTimer = new Timer(2500, this.handleDodgeTimerEnd,false);
     }
 
     public override onEnter(options: Record<string, any>): void {}
@@ -61,10 +63,10 @@ export default abstract class PlayerState extends State {
         }
         // update by a tiny bit every update, using deltaT to account for fps differences
         // Can modify deltaT with rechargeModifier to make recharging faster or slower
-        let rechargeModifier = 1;
-        this.dodgeCharges = this.dodgeCharges + ( deltaT * rechargeModifier );
-        if(this.dodgeCharges > 3)
-            this.dodgeCharges = 3;
+        // let rechargeModifier = 1;
+        // this.dodgeCharges = this.dodgeCharges + ( deltaT * rechargeModifier );
+        // if(this.dodgeCharges > 3)
+        //     this.dodgeCharges = 3;
 
         // Adjust the angle the player is facing 
         //this.parent.owner.rotation = this.parent.controller.rotation;
@@ -136,6 +138,7 @@ export default abstract class PlayerState extends State {
             else if(vec.y < -limitter)
                 vec.y = -limitter;
             this.parent.owner.move(vec);
+            this.emitter.fireEvent(PlayerEvent.DODGE_CHANGE, {curchrg: this.dodgeCharges,maxchrg: 4});
             
         }
 
@@ -145,7 +148,7 @@ export default abstract class PlayerState extends State {
         
         switch(event.type) {
             case PlayerEvent.PLAYER_DODGED: {
-
+                this.handleDodged();
                 break;
             }
             case PlayerEvent.DODGE_OVER: {
@@ -167,6 +170,28 @@ export default abstract class PlayerState extends State {
         }
     }
 
+    protected handleDodged(){
+        //this is where we would do the handling of the timer
+        //then in the case 
+        //this.dodgeCharges--;
+        if(this.emitter===undefined){
+            console.log(3+2);
+        }
+        this.dodgedTimer.reset();
+        this.dodgedTimer.start();
+    }
+    protected handleDodgeTimerEnd =()=>{
+        this.dodgeCharges = MathUtils.clamp(this.dodgeCharges + 1, 0, 4);
+        //this.emitter =new Emitter();
+        if(this.emitter!==undefined){
+            console.log(3+4);
+        }
+        this.emitter.fireEvent(PlayerEvent.DODGE_CHANGE, {curchrg: this.dodgeCharges,maxchrg: 4});
+        if (this.dodgeCharges <4){
+            this.dodgedTimer.start();
+        }
+    }
+
 }
 
 import Idle from "./Idle";
@@ -180,4 +205,6 @@ import PlayerActor from "../../../Actors/PlayerActor";
 import Receiver from "../../../../Wolfie2D/Events/Receiver";
 import Vec2 from "../../../../Wolfie2D/DataTypes/Vec2";
 import Input from "../../../../Wolfie2D/Input/Input";
+import MathUtils from "../../../../Wolfie2D/Utils/MathUtils";
+import Timer from "../../../../Wolfie2D/Timing/Timer";
 export { Idle, Invincible, Moving, Attacking, HeavyAttacking, Dodging, Dead} 

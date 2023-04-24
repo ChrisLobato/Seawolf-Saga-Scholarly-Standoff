@@ -139,7 +139,7 @@ export default class MainHW4Scene extends HW4Scene {
         let tilemapSize: Vec2 = this.walls.size;
 
         this.viewport.setBounds(0, 0, tilemapSize.x, tilemapSize.y);
-        this.viewport.setZoomLevel(2);
+        this.viewport.setZoomLevel(3);
 
         this.initLayers();
         
@@ -164,7 +164,7 @@ export default class MainHW4Scene extends HW4Scene {
         this.receiver.subscribe(BossEvent.BOSS_ATTACKED);
         this.receiver.subscribe(BossEvent.BOSS_ATTACK_FIRE);
         this.receiver.subscribe(BossEvent.BOSS_ATTACK_OVER);
-        this.receiver.subscribe(PlayerEvent.PLAYER_DODGED);
+        this.receiver.subscribe(PlayerEvent.DODGE_CHANGE);
         this.receiver.subscribe(PlayerEvent.DODGE_OVER);
 
         this.receiver.subscribe(SceneEvents.END_SCENE_0);
@@ -222,8 +222,8 @@ export default class MainHW4Scene extends HW4Scene {
                 this.handleBossAttackOver();
                 break;
             }
-            case PlayerEvent.PLAYER_DODGED: {
-                this.handleDodge();
+            case PlayerEvent.DODGE_CHANGE: {
+                this.handleDodgeChargeChange(event.data.get("curchrg"),event.data.get("maxchrg"));
                 break;
             }
             case PlayerEvent.DODGE_OVER: {
@@ -258,11 +258,12 @@ export default class MainHW4Scene extends HW4Scene {
         }
     }
 
-    protected handleDodge(): void {
-        //REVISIT
-        if(this.currentDodge != 0){
-            this.DodgeIcons[this.currentDodge].visible = false;
-            this.currentDodge--;
+    protected handleDodgeChargeChange(currentCharge: number, maxCharge:number): void {
+        for(let i = 0; i < currentCharge && i<this.DodgeIcons.length;i++){
+            this.DodgeIcons[i].visible = true;
+        }
+        for(let i = currentCharge; i < this.DodgeIcons.length; i++ ){
+            this.DodgeIcons[i].visible = false;
         }
     }
 
