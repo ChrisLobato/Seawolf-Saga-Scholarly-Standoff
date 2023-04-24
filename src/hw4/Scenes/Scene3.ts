@@ -44,6 +44,8 @@ import MainMenu from "./MainMenu";
 import Scene2 from "./Scene2";
 import PlayerHealthHUD from "../GameSystems/HUD/PlayerHealthHUD";
 import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
+import Scene3 from "./Scene3";
+import Scene4 from "./Scene4";
 
 const BattlerGroups = {
     RED: 1,
@@ -487,7 +489,7 @@ export default class MainHW4Scene extends HW4Scene {
         this.viewport.setFocus(size);
         this.viewport.setZoomLevel(1);
         this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: "bossMusic1"});
-        this.sceneManager.changeToScene(Scene2);
+        this.sceneManager.changeToScene(Scene4);
     }
     protected handleSceneEndLose (): void {
         // recentering the viewport
@@ -663,11 +665,11 @@ export default class MainHW4Scene extends HW4Scene {
     protected initializeBoss(): void {
         let boss = this.add.animatedSprite(NPCActor, "boss", "primary");
         boss.scale.set(1.5, 1.5);
-        boss.position.set(200, 200);
+        boss.position.set(200, 250);
         boss.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
         boss.battleGroup = 2
-        boss.speed = 10;
-        boss.health = 10;
+        boss.speed = 25;
+        boss.health = 7.5;
         boss.maxHealth = 10;
         boss.navkey = "navmesh";
         // Give the NPC a healthbar

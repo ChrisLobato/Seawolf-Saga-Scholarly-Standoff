@@ -15,13 +15,13 @@ export default class Attack extends NPCAction {
     private isAttacking: boolean;
     private attackTimer: Timer;
 
-    public constructor(parent: NPCBehavior, actor: NPCActor) {
+    public constructor(parent: NPCBehavior, actor: NPCActor, time: number) {
         super(parent, actor);
         this.isAttacking = false;
         
         // REVISIT, change as you will, make sure the bridge/bossattackdelay timer
         // is never shorter than this timer is, will cause unexpected behavior
-        this.attackTimer = new Timer(1250, this.attackOver);
+        this.attackTimer = new Timer(time, this.attackOver);
         
     }    
     

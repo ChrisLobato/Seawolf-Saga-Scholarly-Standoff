@@ -44,6 +44,7 @@ import MainMenu from "./MainMenu";
 import Scene2 from "./Scene2";
 import PlayerHealthHUD from "../GameSystems/HUD/PlayerHealthHUD";
 import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
+import Scene3 from "./Scene3";
 
 const BattlerGroups = {
     RED: 1,
@@ -425,8 +426,8 @@ export default class MainHW4Scene extends HW4Scene {
         let actor = this.bossPasser;
         let position = actor.position;
         let damageSource = position;
-        let halfAttackWidth = 50;
-        let halfAttackLength = 25;
+        let halfAttackWidth = 100;
+        let halfAttackLength = 60;
 
         this.attackMarker2 = <Rect>this.add.graphic(GraphicType.RECT, "primary", { position: damageSource,
             size: new Vec2(halfAttackWidth*2, halfAttackLength*2)});
@@ -445,7 +446,7 @@ export default class MainHW4Scene extends HW4Scene {
                 b.position.y + (b.size.y/2) > top &&
                 b.position.y - (b.size.y/2) < bottom) { 
                     if (!this.godMode){
-                        this.dealDamage(b, 3);
+                        this.dealDamage(b, 2);
                         //Play attack sound effect
                         this.emitter.fireEvent(GameEventType.PLAY_SOUND, {key: "veryHeavyAttack", loop: false, holdReference: false});
                     } else {
@@ -487,7 +488,7 @@ export default class MainHW4Scene extends HW4Scene {
         this.viewport.setFocus(size);
         this.viewport.setZoomLevel(1);
         this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: "bossMusic1"});
-        this.sceneManager.changeToScene(Scene2);
+        this.sceneManager.changeToScene(MainMenu);
     }
     protected handleSceneEndLose (): void {
         // recentering the viewport
@@ -663,10 +664,10 @@ export default class MainHW4Scene extends HW4Scene {
     protected initializeBoss(): void {
         let boss = this.add.animatedSprite(NPCActor, "boss", "primary");
         boss.scale.set(1.5, 1.5);
-        boss.position.set(200, 200);
+        boss.position.set(200, 250);
         boss.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
         boss.battleGroup = 2
-        boss.speed = 10;
+        boss.speed = 15;
         boss.health = 10;
         boss.maxHealth = 10;
         boss.navkey = "navmesh";

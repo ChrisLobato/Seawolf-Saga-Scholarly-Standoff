@@ -44,6 +44,7 @@ import MainMenu from "./MainMenu";
 import Scene2 from "./Scene2";
 import PlayerHealthHUD from "../GameSystems/HUD/PlayerHealthHUD";
 import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
+import Scene3 from "./Scene3";
 
 const BattlerGroups = {
     RED: 1,
@@ -196,7 +197,7 @@ export default class MainHW4Scene extends HW4Scene {
 
         // REVISIT, change as you would like, make SURE it never is longer
         // than the timer in the attack.ts action file
-        this.bossAttackDelayer = new Timer(1000, this.handleBossAttack);
+        this.bossAttackDelayer = new Timer(500, this.handleBossAttack);
 
         this.sceneEndWinDelayer = new Timer(2000, this.sceneEnderWin);
         this.sceneEndLoseDelayer = new Timer(2000, this.sceneEnderLose);
@@ -487,7 +488,7 @@ export default class MainHW4Scene extends HW4Scene {
         this.viewport.setFocus(size);
         this.viewport.setZoomLevel(1);
         this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: "bossMusic1"});
-        this.sceneManager.changeToScene(MainMenu);
+        this.sceneManager.changeToScene(Scene3);
     }
     protected handleSceneEndLose (): void {
         // recentering the viewport
@@ -667,7 +668,7 @@ export default class MainHW4Scene extends HW4Scene {
         boss.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
         boss.battleGroup = 2
         boss.speed = 20;
-        boss.health = 2.49;
+        boss.health = 10;
         boss.maxHealth = 10;
         boss.navkey = "navmesh";
         // Give the NPC a healthbar
@@ -675,7 +676,7 @@ export default class MainHW4Scene extends HW4Scene {
         this.healthbars.set(boss.id, healthbar);
 
         // Give the NPCs their AI
-        boss.addAI(GuardBehavior, {target: this.player, range: 100});
+        boss.addAI(GuardBehavior, {target: this.player, range: 100, time: 700});
         this.boss = boss;
         // Play the NPCs "IDLE" animation 
         boss.animation.play("DOWN");
