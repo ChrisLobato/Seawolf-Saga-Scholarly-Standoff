@@ -44,8 +44,11 @@ export default class PlayerController {
      */
     public get moveDir(): Vec2 { 
         let dir: Vec2 = Vec2.ZERO;
-        dir.y = (Input.isPressed(PlayerInput.MOVE_UP) ? -1 : 0) + (Input.isPressed(PlayerInput.MOVE_DOWN) ? 1 : 0);
-		dir.x = (Input.isPressed(PlayerInput.MOVE_LEFT) ? -1 : 0) + (Input.isPressed(PlayerInput.MOVE_RIGHT) ? 1 : 0);
+        let isAlive = !this.owner.animation.isPlaying("DEAD");
+        dir.y = (Input.isPressed(PlayerInput.MOVE_UP) && isAlive ? -1 : 0) + 
+            (Input.isPressed(PlayerInput.MOVE_DOWN) && isAlive ? 1 : 0);
+		dir.x = (Input.isPressed(PlayerInput.MOVE_LEFT) && isAlive ? -1 : 0) +
+             (Input.isPressed(PlayerInput.MOVE_RIGHT) && isAlive ? 1 : 0);
         //Cheat handling
         if (Input.isPressed(PlayerInput.CHEAT_ADVANCE_LEVEL) && this.cheatTimer.isStopped()){
             this.cheatTimer.start();
@@ -123,6 +126,6 @@ export default class PlayerController {
     
     public get heavyAttacking(): boolean { return Input.isMouseJustPressed(2); }
 
-    public get dodging(): boolean { return Input.isJustPressed(PlayerInput.DODGING); }
+    public get dodging(): boolean { return Input.isJustPressed(PlayerInput.DODGING) && !this.owner.animation.isPlaying("DEAD"); }
 
 }

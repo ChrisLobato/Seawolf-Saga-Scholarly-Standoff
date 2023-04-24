@@ -20,6 +20,7 @@ import GoapState from "../../../../Wolfie2D/AI/Goap/GoapState";
 import Battler from "../../../GameSystems/BattleSystem/Battler";
 import { InRange } from "../NPCStatuses/InRange";
 import { PlayerAlive } from "../NPCStatuses/PlayerAlive";
+import { isDead } from "../NPCStatuses/isDead";
 
 
 
@@ -29,6 +30,8 @@ export default class GuardBehavior extends NPCBehavior {
     protected target: TargetableEntity;
     /** The range the guard should be from the target they're guarding to be considered guarding the target */
     protected range: number;
+
+    protected isPlayerAlive: boolean;
 
     /** Initialize the NPC AI */
     public initializeAI(owner: NPCActor, options: GuardOptions): void {
@@ -81,14 +84,17 @@ export default class GuardBehavior extends NPCBehavior {
 
         // attack
         this.addStatus(GuardStatuses.IN_RANGE, new InRange(this.owner, this.target));
-        // Check if alive
+        // Check if player and self are alive
         this.addStatus(GuardStatuses.PLAYER_ALIVE, new PlayerAlive(this.owner, this.target));
+        // Check if alive
+        this.addStatus(GuardStatuses.IS_DEAD, new isDead(this.owner, this.target));
     }
 
     protected initializeActions(): void {
 
         let scene = this.owner.getScene();
 
+        /*
         // An action for shooting an enemy in the guards guard area
         let shootEnemy = new ShootLaserGun(this, this.owner);
         shootEnemy.targets = scene.getBattlers();
@@ -107,6 +113,7 @@ export default class GuardBehavior extends NPCBehavior {
         pickupLaserGun.addEffect(GuardStatuses.HAS_WEAPON);
         pickupLaserGun.cost = 5;
         this.addState(GuardActions.PICKUP_LASER_GUN, pickupLaserGun);
+        */
 
         // An action for guarding the guard's guard location
         let guard = new Idle(this, this.owner);
@@ -125,8 +132,26 @@ export default class GuardBehavior extends NPCBehavior {
         attack.addPrecondition(GuardStatuses.PLAYER_ALIVE);
         attack.addPrecondition(GuardStatuses.IN_RANGE);
         attack.addEffect(GuardStatuses.GOAL);
-        attack.cost = 10;
+        attack.cost = 200;
         this.addState(GuardActions.ATTACK, attack);
+
+        // An action for guarding the guard's guard location
+        let stallLose = new Idle(this, this.owner);
+        stallLose.targets = [this.owner];
+        stallLose.targetFinder = new BasicFinder();
+        // guard.addPrecondition(GuardStatuses.HAS_WEAPON);
+        stallLose.addPrecondition(GuardStatuses.IS_DEAD);
+        stallLose.addEffect(GuardStatuses.GOAL);
+        stallLose.cost = 1;
+        this.addState(GuardActions.STALL, stallLose);
+
+        let stallWin = new Idle(this, this.owner);
+        stallWin.targets = [this.owner];
+        stallWin.targetFinder = new BasicFinder();
+        // guard.addPrecondition(GuardStatuses.HAS_WEAPON);
+        stallWin.addEffect(GuardStatuses.GOAL);
+        stallWin.cost = 1000000;
+        this.addState(GuardActions.STALL2, stallWin);
     }
 
     public override addState(stateName: GuardAction, state: GoapAction): void {
@@ -156,7 +181,9 @@ export const GuardStatuses = {
 
     IN_RANGE: "in-range",
 
-    PLAYER_ALIVE: "player-alive"
+    PLAYER_ALIVE: "player-alive",
+
+    IS_DEAD: "is-dead"
 
 } as const;
 
@@ -169,7 +196,11 @@ export const GuardActions = {
 
     GUARD: "guard",
 
-    ATTACK: "attack"
+    ATTACK: "attack",
+
+    STALL: "stall",
+
+    STALL2: "stall-2"
 
 } as const;
 

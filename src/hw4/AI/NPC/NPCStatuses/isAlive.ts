@@ -1,14 +1,13 @@
 import GoapState from "../../../../Wolfie2D/AI/Goap/GoapState";
-import Vec2 from "../../../../Wolfie2D/DataTypes/Vec2";
+import AnimatedSprite from "../../../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
 import MathUtils from "../../../../Wolfie2D/Utils/MathUtils";
 import NPCActor from "../../../Actors/NPCActor";
 import { TargetableEntity } from "../../../GameSystems/Targeting/TargetableEntity";
 
-export class PlayerAlive extends GoapState {
+export class isDead extends GoapState {
 
 
     protected actor: NPCActor;
-    protected deadZone: Vec2;
 
     public constructor(actor: NPCActor, target: TargetableEntity) {
         super()
@@ -16,7 +15,7 @@ export class PlayerAlive extends GoapState {
     }
 
     public isSatisfied(): boolean {
-        return this.actor.alpha !== .9797;
+        return !(this.actor.animation.isPlaying("DEAD"));
     }
     
 }

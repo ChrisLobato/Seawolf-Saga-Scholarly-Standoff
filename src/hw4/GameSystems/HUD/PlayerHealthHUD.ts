@@ -48,14 +48,19 @@ export default class HealthbarHUD implements Updateable {
      */
     public update(deltaT: number): void {
 
-
+            for(let i = this.owner.health; i < this.HealthIcons.length; i++){
+                if(this.HealthIcons[i] === undefined){
+                    break;
+                }
+                this.HealthIcons[i].visible = false;
+            }
+            for(let i = 0; i < this.owner.health && i<this.HealthIcons.length; i++){
+                if(this.HealthIcons[i] === undefined){
+                    break;
+                }
+                this.HealthIcons[i].visible = true;
+            }
         
-        for(let i = this.owner.health; i < this.HealthIcons.length; i++ ){
-            this.HealthIcons[i].visible = false;
-        }
-        for(let i = 0; i < this.owner.health && i<this.HealthIcons.length;i++){
-            this.HealthIcons[i].visible = true;
-        }
     }
 
     get ownerId(): number { return this.owner.id; }

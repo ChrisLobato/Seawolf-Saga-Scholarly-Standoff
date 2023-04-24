@@ -63,7 +63,8 @@ export default abstract class PlayerState extends State {
         }
         // Adjust the angle the player is facing 
         //this.parent.owner.rotation = this.parent.controller.rotation;
-        if (!(this.owner.animation.isPlaying("DODGE_START") || this.owner.animation.isPlaying("DODGE_END"))){
+        if (( !(this.owner.animation.isPlaying("DODGE_START") || this.owner.animation.isPlaying("DODGE_END") ) 
+        && !this.owner.animation.isPlaying("DEAD"))){
             if(this.parent.controller.rotation === 0) { 
                 if (this.attackFlag){
                     this.owner.animation.play("ATTACK_UP");

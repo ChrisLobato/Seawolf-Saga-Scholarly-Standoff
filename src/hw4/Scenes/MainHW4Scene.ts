@@ -57,8 +57,9 @@ export default class MainHW4Scene extends HW4Scene {
 
     /** All the battlers in the HW3Scene (including the player) */
     private battlers: (AnimatedSprite & Battler)[];
-    private player: AnimatedSprite;
+    public player: AnimatedSprite;
     private boss: AnimatedSprite;
+    private idPasser: number;
     
     /** Healthbars for the battlers */
     private healthbars: Map<number, HealthbarHUD>;
@@ -86,6 +87,7 @@ export default class MainHW4Scene extends HW4Scene {
     private bossPasser: NPCActor;
     private sceneEndWinDelayer: Timer;
     private sceneEndLoseDelayer: Timer;
+    private disappearTimer: Timer;
 
     // Cheat Flags
     private godMode: boolean;
@@ -194,10 +196,11 @@ export default class MainHW4Scene extends HW4Scene {
 
         // REVISIT, change as you would like, make SURE it never is longer
         // than the timer in the attack.ts action file
-        this.bossAttackDelayer = new Timer(1000, this.bridger);
+        this.bossAttackDelayer = new Timer(1000, this.handleBossAttack);
 
         this.sceneEndWinDelayer = new Timer(2000, this.sceneEnderWin);
         this.sceneEndLoseDelayer = new Timer(2000, this.sceneEnderLose);
+        this.disappearTimer = new Timer(500, this.disappear);
 
         // Add a UI for health
         this.addUILayer("health");
@@ -320,7 +323,7 @@ export default class MainHW4Scene extends HW4Scene {
     protected handleAttack(player: PlayerActor, controller: PlayerController, type: string): void {
         // console.log('attack in main at', player.position.toString(), 'facing', controller.faceDir.toString());
         console.log("handle attack called");
-        
+
         // REVISIT random values for testing
         let halfAttackWidth = 0;
         let halfAttackLength = 0;
@@ -335,6 +338,8 @@ export default class MainHW4Scene extends HW4Scene {
             halfAttackLength = 20;
             distanceAdder = 40;
         }
+
+        
 
         // making sure player position is unchanged
         let damageSource: Vec2 = Vec2.ZERO;
@@ -408,14 +413,14 @@ export default class MainHW4Scene extends HW4Scene {
         this.bossAttackDelayer.start();
     }
 
-    protected bridger(): void {
+/*    protected bridger(): void {
         // `this` here reffers to the timer itself or something weird like that,
         // so instead I just fire an event so it can be handled in the original this
         let emitter = new Emitter();
         emitter.fireEvent(BossEvent.BOSS_ATTACK_FIRE);
-    }
+    }*/
 
-    protected handleBossAttack(): void {
+    protected handleBossAttack = () => {
         // can pass in the player from target in guardbehavior
         let actor = this.bossPasser;
         let position = actor.position;
@@ -440,7 +445,7 @@ export default class MainHW4Scene extends HW4Scene {
                 b.position.y + (b.size.y/2) > top &&
                 b.position.y - (b.size.y/2) < bottom) { 
                     if (!this.godMode){
-                        this.dealDamage(b, 1);
+                        this.dealDamage(b, 3);
                         //Play attack sound effect
                         this.emitter.fireEvent(GameEventType.PLAY_SOUND, {key: "veryHeavyAttack", loop: false, holdReference: false});
                     } else {
@@ -514,10 +519,14 @@ export default class MainHW4Scene extends HW4Scene {
         
         if(id === this.player.id){
             console.log("player killed! Ending");
+            
+            this.player.animation.play("DEAD");
+            console.log("played death animation");
+            //marks the player as dead for guardbehavior
+            this.boss.alpha = .9797; //SUPER SCUFFED, REVISIT IMPORTANT TODO
             this.sceneEndLoseDelayer.start();
             // this marks it as dead for the guardbehavior, prob a better way to do this
-            this.player.position.x = 2000;
-            this.player.position.y = 2000;
+            
             // TODO death animation
             // this.emitter.fireEvent(PlayerEvent.PLAYER_KILLED);
         }
@@ -525,19 +534,30 @@ export default class MainHW4Scene extends HW4Scene {
             console.log("Boss killed! Ending");
             // TODO death animation
             // this.emitter.fireEvent(BossEvent.BOSS_KILLED);
+            this.boss.animation.playIfNotAlready("DEAD");
             this.sceneEndWinDelayer.start();
             
         }
         // IMPORTANT !
         // TODO cause this to happen after player death animation plays!
 
+        this.idPasser = id;
+        console.log("starting disappear timer");
+        this.disappearTimer.start();
+        
+        
+    }
+
+    protected disappear = () =>  {
+        console.log("in disappear");
+        let id = this.idPasser;
         let battler = this.battlers.find(b => b.id === id);
+        console.log("the passed ID", id);
 
         if (battler) {
             battler.battlerActive = false;
             this.healthbars.get(id).visible = false;
         }
-        
     }
 
     /** Initializes the layers in the scene */
