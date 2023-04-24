@@ -61,13 +61,6 @@ export default abstract class PlayerState extends State {
         while (this.receiver.hasNextEvent()) {
             this.handleInput(this.receiver.getNextEvent());
         }
-        // update by a tiny bit every update, using deltaT to account for fps differences
-        // Can modify deltaT with rechargeModifier to make recharging faster or slower
-        // let rechargeModifier = 1;
-        // this.dodgeCharges = this.dodgeCharges + ( deltaT * rechargeModifier );
-        // if(this.dodgeCharges > 3)
-        //     this.dodgeCharges = 3;
-
         // Adjust the angle the player is facing 
         //this.parent.owner.rotation = this.parent.controller.rotation;
         if (!(this.owner.animation.isPlaying("DODGE_START") || this.owner.animation.isPlaying("DODGE_END"))){
@@ -119,7 +112,7 @@ export default abstract class PlayerState extends State {
 
         }
 
-        if(this.parent.controller.dodging && this.dodgeCharges > 1){
+        if(this.parent.controller.dodging && this.dodgeCharges >= 1){
             // subtract a dodge charge
             //this.owner.animation.play("DODGE_START", false, PlayerEvent.DODGE_OVER);
             //console.log("Dodge Start");
@@ -139,6 +132,7 @@ export default abstract class PlayerState extends State {
                 vec.y = -limitter;
             this.parent.owner.move(vec);
             this.emitter.fireEvent(PlayerEvent.DODGE_CHANGE, {curchrg: this.dodgeCharges,maxchrg: 4});
+            this.handleDodged();
             
         }
 
@@ -148,7 +142,7 @@ export default abstract class PlayerState extends State {
         
         switch(event.type) {
             case PlayerEvent.PLAYER_DODGED: {
-                this.handleDodged();
+                // this.handleDodged();
                 break;
             }
             case PlayerEvent.DODGE_OVER: {
@@ -171,21 +165,12 @@ export default abstract class PlayerState extends State {
     }
 
     protected handleDodged(){
-        //this is where we would do the handling of the timer
-        //then in the case 
-        //this.dodgeCharges--;
-        if(this.emitter===undefined){
-            console.log(3+2);
-        }
         this.dodgedTimer.reset();
         this.dodgedTimer.start();
     }
     protected handleDodgeTimerEnd =()=>{
         this.dodgeCharges = MathUtils.clamp(this.dodgeCharges + 1, 0, 4);
         //this.emitter =new Emitter();
-        if(this.emitter!==undefined){
-            console.log(3+4);
-        }
         this.emitter.fireEvent(PlayerEvent.DODGE_CHANGE, {curchrg: this.dodgeCharges,maxchrg: 4});
         if (this.dodgeCharges <4){
             this.dodgedTimer.start();

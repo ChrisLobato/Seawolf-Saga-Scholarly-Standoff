@@ -223,6 +223,7 @@ export default class MainHW4Scene extends HW4Scene {
                 break;
             }
             case PlayerEvent.DODGE_CHANGE: {
+                console.log("HERE");
                 this.handleDodgeChargeChange(event.data.get("curchrg"),event.data.get("maxchrg"));
                 break;
             }
@@ -259,12 +260,13 @@ export default class MainHW4Scene extends HW4Scene {
     }
 
     protected handleDodgeChargeChange(currentCharge: number, maxCharge:number): void {
-        for(let i = 0; i < currentCharge && i<this.DodgeIcons.length;i++){
-            this.DodgeIcons[i].visible = true;
-        }
         for(let i = currentCharge; i < this.DodgeIcons.length; i++ ){
             this.DodgeIcons[i].visible = false;
         }
+        for(let i = 0; i < currentCharge && i<this.DodgeIcons.length;i++){
+            this.DodgeIcons[i].visible = true;
+        }
+
     }
 
     protected handleDodgeOver(): void {
