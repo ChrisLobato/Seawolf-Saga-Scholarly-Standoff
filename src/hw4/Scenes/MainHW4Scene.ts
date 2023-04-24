@@ -43,6 +43,7 @@ import AnimatedSprite from "../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
 import MainMenu from "./MainMenu";
 import Scene2 from "./Scene2";
 import PlayerHealthHUD from "../GameSystems/HUD/PlayerHealthHUD";
+import Input from "../../Wolfie2D/Input/Input";
 
 const BattlerGroups = {
     RED: 1,
@@ -85,6 +86,9 @@ export default class MainHW4Scene extends HW4Scene {
     private bossPasser: NPCActor;
     private sceneEndWinDelayer: Timer;
     private sceneEndLoseDelayer: Timer;
+
+    // Cheat Flags
+    private godMode: boolean;
    
 
 
@@ -96,6 +100,7 @@ export default class MainHW4Scene extends HW4Scene {
 
         this.laserguns = new Array<LaserGun>();
         this.healthpacks = new Array<Healthpack>();
+        this.godMode = false;
     }
 
     /**
@@ -171,6 +176,10 @@ export default class MainHW4Scene extends HW4Scene {
 
         this.receiver.subscribe(SceneEvents.END_SCENE_0);
         this.receiver.subscribe(SceneEvents.END_SCENE_1);
+        
+        // Cheat Events
+        this.receiver.subscribe(PlayerEvent.CHEAT_GOD_MODE);
+        this.receiver.subscribe(PlayerEvent.CHEAT_ADVANCE_LEVEL);
 
         // REVISIT, change as you would like, make SURE it never is longer
         // than the timer in the attack.ts action file
@@ -254,6 +263,21 @@ export default class MainHW4Scene extends HW4Scene {
             }
             case ItemEvent.ITEM_REQUEST: {
                 this.handleItemRequest(event.data.get("node"), event.data.get("inventory"));
+                break;
+            }
+            case PlayerEvent.CHEAT_GOD_MODE: {
+                if (this.godMode) {
+                    console.log("God mode disabled");
+                }
+                else {
+                    console.log("God mode enabled");
+                }
+                this.godMode = !this.godMode;
+                break;
+            }
+            case PlayerEvent.CHEAT_ADVANCE_LEVEL: {
+                console.log("Cheat activated: advancing level");
+                this.handleSceneEndWin();
                 break;
             }
 
@@ -348,9 +372,9 @@ export default class MainHW4Scene extends HW4Scene {
                 b.position.y + (b.size.y/2) > top &&
                 b.position.y - (b.size.y/2) < bottom) {
                     this.dealDamage(b, damage);
+                }
             }
         }
-    }
 
     protected handleAttackOver(): void {
         this.attackMarker.visible = false;
@@ -395,7 +419,11 @@ export default class MainHW4Scene extends HW4Scene {
                 b.position.x + (b.size.x/2)> left &&
                 b.position.y + (b.size.y/2) > top &&
                 b.position.y - (b.size.y/2) < bottom) { 
-                    this.dealDamage(b, 1);
+                    if (!this.godMode){
+                        this.dealDamage(b, 1);
+                    } else {
+                        console.log("god mode is on, no damage taken");
+                    }
             }
         }
 

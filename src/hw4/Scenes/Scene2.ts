@@ -94,6 +94,7 @@ export default class MainHW4Scene extends HW4Scene {
 
         this.laserguns = new Array<LaserGun>();
         this.healthpacks = new Array<Healthpack>();
+        console.log("Scene 2 Loaded");
     }
 
     /**

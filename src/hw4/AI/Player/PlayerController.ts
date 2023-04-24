@@ -1,10 +1,14 @@
 import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
 import Input from "../../../Wolfie2D/Input/Input";
 import AnimatedSprite from "../../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
+import Emitter from "../../../Wolfie2D/Events/Emitter";
+import { PlayerEvent } from "../../Events";
+import Timer from "../../../Wolfie2D/Timing/Timer";
 
 /**
  * Strings used in the key binding for the player
  */
+
 export enum PlayerInput {
     MOVE_UP = "MOVE_UP",
     MOVE_DOWN = "MOVE_DOWN",
@@ -12,7 +16,9 @@ export enum PlayerInput {
     MOVE_RIGHT = "MOVE_RIGHT",
     DODGING = "DODGING",
     PICKUP_ITEM = "PICKUP_ITEM",
-    DROP_ITEM = "DROP_ITEM"
+    DROP_ITEM = "DROP_ITEM",
+    CHEAT_ADVANCE_LEVEL = "CHEAT_ADVANCE_LEVEL",
+    CHEAT_GOD_MODE = "CHEAT_GOD_MODE"
 }
 
 /**
@@ -23,9 +29,13 @@ export default class PlayerController {
 
     /** The GameNode that owns the AI */
     protected owner: AnimatedSprite;
+    protected emitter: Emitter;
+    protected cheatTimer: Timer;
 
     constructor(owner: AnimatedSprite) {
         this.owner = owner;
+        this.emitter = new Emitter();
+        this.cheatTimer = new Timer(500);
     }
 
     /**
@@ -36,6 +46,16 @@ export default class PlayerController {
         let dir: Vec2 = Vec2.ZERO;
         dir.y = (Input.isPressed(PlayerInput.MOVE_UP) ? -1 : 0) + (Input.isPressed(PlayerInput.MOVE_DOWN) ? 1 : 0);
 		dir.x = (Input.isPressed(PlayerInput.MOVE_LEFT) ? -1 : 0) + (Input.isPressed(PlayerInput.MOVE_RIGHT) ? 1 : 0);
+        //Cheat handling
+        if (Input.isPressed(PlayerInput.CHEAT_ADVANCE_LEVEL) && this.cheatTimer.isStopped()){
+            this.cheatTimer.start();
+            this.emitter.fireEvent(PlayerEvent.CHEAT_ADVANCE_LEVEL);
+        }
+        if (Input.isPressed(PlayerInput.CHEAT_GOD_MODE) && this.cheatTimer.isStopped()){
+            this.cheatTimer.start();
+            this.emitter.fireEvent(PlayerEvent.CHEAT_GOD_MODE);
+            
+        }
         return dir.normalize();
     }
 
