@@ -42,6 +42,7 @@ import Emitter from "../../Wolfie2D/Events/Emitter";
 import AnimatedSprite from "../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
 import MainMenu from "./MainMenu";
 import Scene2 from "./Scene2";
+import PlayerHealthHUD from "../GameSystems/HUD/PlayerHealthHUD";
 
 const BattlerGroups = {
     RED: 1,
@@ -66,6 +67,7 @@ export default class MainHW4Scene extends HW4Scene {
     private HealthIcons: Array<Sprite>;
     private DodgeIcons: Array<Sprite>;
     private currentDodge = 3;
+    private PlayerHealthBar: PlayerHealthHUD;
 
     private healthpacks: Array<Healthpack>;
     private laserguns: Array<LaserGun>;
@@ -193,6 +195,9 @@ export default class MainHW4Scene extends HW4Scene {
             this.handleEvent(this.receiver.getNextEvent());
         }
         this.inventoryHud.update(deltaT);
+        //This is where we could update the player health bar
+        // this.handleHealthChange(player.health,player.maxHealth);
+        this.PlayerHealthBar.update(deltaT);
         this.healthbars.forEach(healthbar => healthbar.update(deltaT));
     }
 
@@ -268,7 +273,7 @@ export default class MainHW4Scene extends HW4Scene {
         }
 
     }
-
+    
     protected handleDodgeOver(): void {
         //REVISIT
     }
@@ -519,9 +524,10 @@ export default class MainHW4Scene extends HW4Scene {
         // Give the player physics
         player.addPhysics(new AABB(Vec2.ZERO, new Vec2(8, 8)));
 
-        // Give the player a healthbar
+        // Give the player a healthbar NOTE: this is the Original HealthBar
         let healthbar = new HealthbarHUD(this, player, "primary", {size: player.size.clone().scaled(2, 1/2), offset: player.size.clone().scaled(0, -1/2)});
         this.healthbars.set(player.id, healthbar);
+        healthbar.visible = false; // Im setting it to invisible for now because i realize that another part of the code relies on this existing
 
         this.addUILayer("health2")
         this.HealthIcons = new Array(4);
@@ -533,17 +539,21 @@ export default class MainHW4Scene extends HW4Scene {
         this.HealthIcons[1].scale.set(.25,.25);
         this.HealthIcons[2].scale.set(.25,.25);
         this.HealthIcons[3].scale.set(.25,.25);
-
-
-
-        this.HealthIcons[0].positionX = this.viewport.getCenter().x - 490;
+        this.HealthIcons[0].positionX = this.getViewport().getCenter().x - 490;
         this.HealthIcons[0].positionY = 0 +30;
-        this.HealthIcons[1].positionX = this.viewport.getCenter().x - 440;
+        this.HealthIcons[1].positionX = this.getViewport().getCenter().x - 440;
         this.HealthIcons[1].positionY = 0 +30;
-        this.HealthIcons[2].positionX = this.viewport.getCenter().x - 390;
+        this.HealthIcons[2].positionX = this.getViewport().getCenter().x - 390;
         this.HealthIcons[2].positionY = 0 +30;
-        this.HealthIcons[3].positionX = this.viewport.getCenter().x - 340;
+        this.HealthIcons[3].positionX = this.getViewport().getCenter().x - 340;
         this.HealthIcons[3].positionY = 0 +30;
+
+        //Creates a Wolfie Sprite healthbar
+        let playerHealthbar = new PlayerHealthHUD(this,player,"primary",this.HealthIcons);
+        this.PlayerHealthBar = playerHealthbar;
+
+
+
 
         this.DodgeIcons = new Array(4);
         this.DodgeIcons[0] = this.add.sprite("dodgeIcon","health2");
