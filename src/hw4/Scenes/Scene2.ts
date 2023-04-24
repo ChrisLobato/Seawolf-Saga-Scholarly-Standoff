@@ -42,6 +42,8 @@ import Emitter from "../../Wolfie2D/Events/Emitter";
 import AnimatedSprite from "../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
 import MainMenu from "./MainMenu";
 import Scene2 from "./Scene2";
+import PlayerHealthHUD from "../GameSystems/HUD/PlayerHealthHUD";
+import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
 
 const BattlerGroups = {
     RED: 1,
@@ -66,6 +68,7 @@ export default class MainHW4Scene extends HW4Scene {
     private HealthIcons: Array<Sprite>;
     private DodgeIcons: Array<Sprite>;
     private currentDodge = 3;
+    private PlayerHealthBar: PlayerHealthHUD;
 
     private healthpacks: Array<Healthpack>;
     private laserguns: Array<LaserGun>;
@@ -83,6 +86,9 @@ export default class MainHW4Scene extends HW4Scene {
     private bossPasser: NPCActor;
     private sceneEndWinDelayer: Timer;
     private sceneEndLoseDelayer: Timer;
+
+    // Cheat Flags
+    private godMode: boolean;
    
 
 
@@ -94,7 +100,7 @@ export default class MainHW4Scene extends HW4Scene {
 
         this.laserguns = new Array<LaserGun>();
         this.healthpacks = new Array<Healthpack>();
-        console.log("Scene 2 Loaded");
+        this.godMode = false;
     }
 
     /**
@@ -125,6 +131,17 @@ export default class MainHW4Scene extends HW4Scene {
 
         this.load.image("healthIcon", "hw4_assets/sprites/WolfieHealth.png");
         this.load.image("dodgeIcon", "hw4_assets/sprites/DodgeIcon.png");
+
+        // Stop Main Menu Music
+        this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: "mainMenuMusic"});
+
+        // Load audio from the audio folder
+        this.load.audio("heavyAttack", "hw4_assets/sounds/s4_heavy_attack.wav");
+        this.load.audio("lightAttack", "hw4_assets/sounds/s4_light_attack.wav");
+        this.load.audio("playerDamaged", "hw4_assets/sounds/s4_player_damaged.wav");
+        this.load.audio("bossMusic1", "hw4_assets/sounds/s4_boss_music_1.wav");
+        this.load.audio("veryHeavyAttack", "hw4_assets/sounds/s4_very_heavy_attack.wav");
+
     }
     /**
      * @see Scene.startScene
@@ -165,11 +182,15 @@ export default class MainHW4Scene extends HW4Scene {
         this.receiver.subscribe(BossEvent.BOSS_ATTACKED);
         this.receiver.subscribe(BossEvent.BOSS_ATTACK_FIRE);
         this.receiver.subscribe(BossEvent.BOSS_ATTACK_OVER);
-        this.receiver.subscribe(PlayerEvent.PLAYER_DODGED);
+        this.receiver.subscribe(PlayerEvent.DODGE_CHANGE);
         this.receiver.subscribe(PlayerEvent.DODGE_OVER);
 
         this.receiver.subscribe(SceneEvents.END_SCENE_0);
         this.receiver.subscribe(SceneEvents.END_SCENE_1);
+        
+        // Cheat Events
+        this.receiver.subscribe(PlayerEvent.CHEAT_GOD_MODE);
+        this.receiver.subscribe(PlayerEvent.CHEAT_ADVANCE_LEVEL);
 
         // REVISIT, change as you would like, make SURE it never is longer
         // than the timer in the attack.ts action file
@@ -185,6 +206,9 @@ export default class MainHW4Scene extends HW4Scene {
         this.receiver.subscribe(PlayerEvent.PLAYER_KILLED);
         this.receiver.subscribe(BattlerEvent.BATTLER_KILLED);
         this.receiver.subscribe(BattlerEvent.BATTLER_RESPAWN);
+
+        // Play boss music
+        this.emitter.fireEvent(GameEventType.PLAY_MUSIC, {key: "bossMusic1", loop: true, holdReference: true});
     }
     /**
      * @see Scene.updateScene
@@ -194,6 +218,9 @@ export default class MainHW4Scene extends HW4Scene {
             this.handleEvent(this.receiver.getNextEvent());
         }
         this.inventoryHud.update(deltaT);
+        //This is where we could update the player health bar
+        // this.handleHealthChange(player.health,player.maxHealth);
+        this.PlayerHealthBar.update(deltaT);
         this.healthbars.forEach(healthbar => healthbar.update(deltaT));
     }
 
@@ -224,7 +251,8 @@ export default class MainHW4Scene extends HW4Scene {
                 break;
             }
             case PlayerEvent.DODGE_CHANGE: {
-                this.handleDodgeChargeChange(event.data.get("curchg"),event.data.get("maxchrg"));;
+                console.log("HERE");
+                this.handleDodgeChargeChange(event.data.get("curchrg"),event.data.get("maxchrg"));
                 break;
             }
             case PlayerEvent.DODGE_OVER: {
@@ -251,6 +279,21 @@ export default class MainHW4Scene extends HW4Scene {
                 this.handleItemRequest(event.data.get("node"), event.data.get("inventory"));
                 break;
             }
+            case PlayerEvent.CHEAT_GOD_MODE: {
+                if (this.godMode) {
+                    console.log("God mode disabled");
+                }
+                else {
+                    console.log("God mode enabled");
+                }
+                this.godMode = !this.godMode;
+                break;
+            }
+            case PlayerEvent.CHEAT_ADVANCE_LEVEL: {
+                console.log("Cheat activated: advancing level");
+                this.handleSceneEndWin();
+                break;
+            }
 
        
             default: {
@@ -260,14 +303,15 @@ export default class MainHW4Scene extends HW4Scene {
     }
 
     protected handleDodgeChargeChange(currentCharge: number, maxCharge:number): void {
-        for(let i = 0; i < currentCharge && i<this.DodgeIcons.length;i++){
+        for(let i = currentCharge; i < this.DodgeIcons.length; i++ ){
             this.DodgeIcons[i].visible = false;
         }
-        for(let i = currentCharge; i < this.DodgeIcons.length; i++ ){
+        for(let i = 0; i < currentCharge && i<this.DodgeIcons.length;i++){
             this.DodgeIcons[i].visible = true;
         }
-    }
 
+    }
+    
     protected handleDodgeOver(): void {
         //REVISIT
     }
@@ -342,9 +386,15 @@ export default class MainHW4Scene extends HW4Scene {
                 b.position.y + (b.size.y/2) > top &&
                 b.position.y - (b.size.y/2) < bottom) {
                     this.dealDamage(b, damage);
+                    //Play attack sound effects
+                    if (type === "light"){
+                        this.emitter.fireEvent(GameEventType.PLAY_SOUND, {key: "lightAttack", loop: false, holdReference: false});
+                    } else {
+                        this.emitter.fireEvent(GameEventType.PLAY_SOUND, {key: "heavyAttack", loop: false, holdReference: false});
+                    }
+                }
             }
         }
-    }
 
     protected handleAttackOver(): void {
         this.attackMarker.visible = false;
@@ -389,7 +439,13 @@ export default class MainHW4Scene extends HW4Scene {
                 b.position.x + (b.size.x/2)> left &&
                 b.position.y + (b.size.y/2) > top &&
                 b.position.y - (b.size.y/2) < bottom) { 
-                    this.dealDamage(b, 3);
+                    if (!this.godMode){
+                        this.dealDamage(b, 3);
+                        //Play attack sound effect
+                        this.emitter.fireEvent(GameEventType.PLAY_SOUND, {key: "veryHeavyAttack", loop: false, holdReference: false});
+                    } else {
+                        console.log("god mode is on, no damage taken");
+                    }
             }
         }
 
@@ -425,6 +481,7 @@ export default class MainHW4Scene extends HW4Scene {
         let size = this.viewport.getHalfSize();
         this.viewport.setFocus(size);
         this.viewport.setZoomLevel(1);
+        this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: "bossMusic1"});
         this.sceneManager.changeToScene(MainMenu);
     }
     protected handleSceneEndLose (): void {
@@ -433,6 +490,7 @@ export default class MainHW4Scene extends HW4Scene {
         let size = this.viewport.getHalfSize();
         this.viewport.setFocus(size);
         this.viewport.setZoomLevel(1);
+        this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: "bossMusic1"});
         this.sceneManager.changeToScene(MainMenu);
     }
 
@@ -518,9 +576,10 @@ export default class MainHW4Scene extends HW4Scene {
         // Give the player physics
         player.addPhysics(new AABB(Vec2.ZERO, new Vec2(8, 8)));
 
-        // Give the player a healthbar
+        // Give the player a healthbar NOTE: this is the Original HealthBar
         let healthbar = new HealthbarHUD(this, player, "primary", {size: player.size.clone().scaled(2, 1/2), offset: player.size.clone().scaled(0, -1/2)});
         this.healthbars.set(player.id, healthbar);
+        healthbar.visible = false; // Im setting it to invisible for now because i realize that another part of the code relies on this existing
 
         this.addUILayer("health2")
         this.HealthIcons = new Array(4);
@@ -532,17 +591,21 @@ export default class MainHW4Scene extends HW4Scene {
         this.HealthIcons[1].scale.set(.25,.25);
         this.HealthIcons[2].scale.set(.25,.25);
         this.HealthIcons[3].scale.set(.25,.25);
-
-
-
-        this.HealthIcons[0].positionX = this.viewport.getCenter().x - 490;
+        this.HealthIcons[0].positionX = this.getViewport().getCenter().x - 490;
         this.HealthIcons[0].positionY = 0 +30;
-        this.HealthIcons[1].positionX = this.viewport.getCenter().x - 440;
+        this.HealthIcons[1].positionX = this.getViewport().getCenter().x - 440;
         this.HealthIcons[1].positionY = 0 +30;
-        this.HealthIcons[2].positionX = this.viewport.getCenter().x - 390;
+        this.HealthIcons[2].positionX = this.getViewport().getCenter().x - 390;
         this.HealthIcons[2].positionY = 0 +30;
-        this.HealthIcons[3].positionX = this.viewport.getCenter().x - 340;
+        this.HealthIcons[3].positionX = this.getViewport().getCenter().x - 340;
         this.HealthIcons[3].positionY = 0 +30;
+
+        //Creates a Wolfie Sprite healthbar
+        let playerHealthbar = new PlayerHealthHUD(this,player,"primary",this.HealthIcons);
+        this.PlayerHealthBar = playerHealthbar;
+
+
+
 
         this.DodgeIcons = new Array(4);
         this.DodgeIcons[0] = this.add.sprite("dodgeIcon","health2");
@@ -584,7 +647,7 @@ export default class MainHW4Scene extends HW4Scene {
         boss.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
         boss.battleGroup = 2
         boss.speed = 20;
-        boss.health = 1;
+        boss.health = 2.49;
         boss.maxHealth = 10;
         boss.navkey = "navmesh";
         // Give the NPC a healthbar
