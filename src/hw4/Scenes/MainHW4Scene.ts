@@ -43,7 +43,7 @@ import AnimatedSprite from "../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
 import MainMenu from "./MainMenu";
 import Scene2 from "./Scene2";
 import PlayerHealthHUD from "../GameSystems/HUD/PlayerHealthHUD";
-import Input from "../../Wolfie2D/Input/Input";
+import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
 
 const BattlerGroups = {
     RED: 1,
@@ -131,6 +131,17 @@ export default class MainHW4Scene extends HW4Scene {
 
         this.load.image("healthIcon", "hw4_assets/sprites/WolfieHealth.png");
         this.load.image("dodgeIcon", "hw4_assets/sprites/DodgeIcon.png");
+
+        // Stop Main Menu Music
+        this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: "mainMenuMusic"});
+
+        // Load audio from the audio folder
+        this.load.audio("heavyAttack", "hw4_assets/sounds/s4_heavy_attack.wav");
+        this.load.audio("lightAttack", "hw4_assets/sounds/s4_light_attack.wav");
+        this.load.audio("playerDamaged", "hw4_assets/sounds/s4_player_damaged.wav");
+        this.load.audio("bossMusic1", "hw4_assets/sounds/s4_boss_music_1.wav");
+        this.load.audio("veryHeavyAttack", "hw4_assets/sounds/s4_very_heavy_attack.wav");
+
     }
     /**
      * @see Scene.startScene
@@ -195,6 +206,9 @@ export default class MainHW4Scene extends HW4Scene {
         this.receiver.subscribe(PlayerEvent.PLAYER_KILLED);
         this.receiver.subscribe(BattlerEvent.BATTLER_KILLED);
         this.receiver.subscribe(BattlerEvent.BATTLER_RESPAWN);
+
+        // Play boss music
+        this.emitter.fireEvent(GameEventType.PLAY_MUSIC, {key: "bossMusic1", loop: true, holdReference: true});
     }
     /**
      * @see Scene.updateScene
@@ -372,6 +386,12 @@ export default class MainHW4Scene extends HW4Scene {
                 b.position.y + (b.size.y/2) > top &&
                 b.position.y - (b.size.y/2) < bottom) {
                     this.dealDamage(b, damage);
+                    //Play attack sound effects
+                    if (type === "light"){
+                        this.emitter.fireEvent(GameEventType.PLAY_SOUND, {key: "lightAttack", loop: false, holdReference: false});
+                    } else {
+                        this.emitter.fireEvent(GameEventType.PLAY_SOUND, {key: "heavyAttack", loop: false, holdReference: false});
+                    }
                 }
             }
         }
@@ -421,6 +441,8 @@ export default class MainHW4Scene extends HW4Scene {
                 b.position.y - (b.size.y/2) < bottom) { 
                     if (!this.godMode){
                         this.dealDamage(b, 1);
+                        //Play attack sound effect
+                        this.emitter.fireEvent(GameEventType.PLAY_SOUND, {key: "veryHeavyAttack", loop: false, holdReference: false});
                     } else {
                         console.log("god mode is on, no damage taken");
                     }
@@ -459,6 +481,7 @@ export default class MainHW4Scene extends HW4Scene {
         let size = this.viewport.getHalfSize();
         this.viewport.setFocus(size);
         this.viewport.setZoomLevel(1);
+        this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: "bossMusic1"});
         this.sceneManager.changeToScene(Scene2);
     }
     protected handleSceneEndLose (): void {
@@ -467,6 +490,7 @@ export default class MainHW4Scene extends HW4Scene {
         let size = this.viewport.getHalfSize();
         this.viewport.setFocus(size);
         this.viewport.setZoomLevel(1);
+        this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: "bossMusic1"});
         this.sceneManager.changeToScene(MainMenu);
     }
 

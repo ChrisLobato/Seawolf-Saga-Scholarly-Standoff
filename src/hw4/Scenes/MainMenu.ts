@@ -11,6 +11,8 @@ import GuardDemoScene from "./GuardDemoScene";
 import HelpScreen from "./HelpScreen";
 import ControlsScreen from "./ControlsScreen";
 import LevelsScreen from "./LevelsScreen";
+import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
+
 
 export default class MainMenu extends Scene {
     // Layers, for multiple main menu screens
@@ -22,6 +24,7 @@ export default class MainMenu extends Scene {
     public loadScene(){
         this.load.image("MainMenu", "hw4_assets/sprites/MainMenu.png");
         this.load.image("logo", "hw4_assets/sprites/TransparentLogo.png");
+        this.load.audio("mainMenuMusic", "hw4_assets/sounds/s4_main_menu_music.wav");
 
     }
 
@@ -81,7 +84,9 @@ export default class MainMenu extends Scene {
         this.receiver.subscribe("controls");
         this.receiver.subscribe("help");
 
-        
+        //Play Music
+        this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: "mainMenuMusic"});
+        this.emitter.fireEvent(GameEventType.PLAY_MUSIC, {key: "mainMenuMusic", loop: true, holdReference: true});
         
     }
 
