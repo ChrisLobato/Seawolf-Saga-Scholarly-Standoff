@@ -94,16 +94,12 @@ export default class MainHW4Scene extends HW4Scene {
 
     private win: boolean;
    
-
-
     public constructor(viewport: Viewport, sceneManager: SceneManager, renderingManager: RenderingManager, options: Record<string, any>) {
         super(viewport, sceneManager, renderingManager, options);
 
         this.battlers = new Array<AnimatedSprite & Battler>();
         this.healthbars = new Map<number, HealthbarHUD>();
 
-        this.laserguns = new Array<LaserGun>();
-        this.healthpacks = new Array<Healthpack>();
         this.godMode = false;
     }
 
@@ -119,19 +115,6 @@ export default class MainHW4Scene extends HW4Scene {
 
         // Load the tilemap
         this.load.tilemap("level", "hw4_assets/tilemaps/boss_map_1.json");
-
-        // Load the enemy locations
-        this.load.object("red", "hw4_assets/data/enemies/red.json");
-        this.load.object("blue", "hw4_assets/data/enemies/blue.json");
-
-        // Load the healthpack and lasergun loactions
-        this.load.object("healthpacks", "hw4_assets/data/items/healthpacks.json");
-        this.load.object("laserguns", "hw4_assets/data/items/laserguns.json");
-
-        // Load the healthpack, inventory slot, and laser gun sprites
-        this.load.image("healthpack", "hw4_assets/sprites/healthpack.png");
-        this.load.image("inventorySlot", "hw4_assets/sprites/inventory.png");
-        this.load.image("laserGun", "hw4_assets/sprites/laserGun.png");
 
         this.load.image("healthIcon", "hw4_assets/sprites/WolfieHealth.png");
         this.load.image("dodgeIcon", "hw4_assets/sprites/DodgeIcon.png");
@@ -171,11 +154,7 @@ export default class MainHW4Scene extends HW4Scene {
 
         this.initializeNavmesh();
 
-        // Create the NPCS
-        // this.initializeNPCs();
-
-        // Create the boss
-
+        // Create the boss/es
         let bossSpeed = 10;
         let bossHealth = 10;
         let bossMaxHealth = 10;
@@ -207,8 +186,6 @@ export default class MainHW4Scene extends HW4Scene {
         this.receiver.subscribe(PlayerEvent.CHEAT_GOD_MODE);
         this.receiver.subscribe(PlayerEvent.CHEAT_ADVANCE_LEVEL);
 
-        
-
         this.sceneEndWinDelayer = new Timer(2000, this.sceneEnderWin);
         this.sceneEndLoseDelayer = new Timer(2000, this.sceneEnderLose);
         this.disappearTimer = new Timer(500, this.disappear);
@@ -231,11 +208,13 @@ export default class MainHW4Scene extends HW4Scene {
         while (this.receiver.hasNextEvent()) {
             this.handleEvent(this.receiver.getNextEvent());
         }
-        this.inventoryHud.update(deltaT);
-        //This is where we could update the player health bar
-        // this.handleHealthChange(player.health,player.maxHealth);
         this.PlayerHealthBar.update(deltaT);
         this.healthbars.forEach(healthbar => healthbar.update(deltaT));
+
+        // OLD, can be useful to learn from 
+        // this.inventoryHud.update(deltaT);
+        // This is where we could update the player health bar
+        // this.handleHealthChange(player.health,player.maxHealth);
     }
 
     /**
@@ -281,7 +260,6 @@ export default class MainHW4Scene extends HW4Scene {
                 this.handleSceneEndWin();
                 break;
             }
-
             case BattlerEvent.BATTLER_KILLED: {
                 this.handleBattlerKilled(event);
                 break;
@@ -308,8 +286,6 @@ export default class MainHW4Scene extends HW4Scene {
                 this.handleSceneEndWin();
                 break;
             }
-
-       
             default: {
                 throw new Error(`Unhandled event type "${event.type}" caught in SeawolfSaga event handler`);
             }
@@ -349,8 +325,6 @@ export default class MainHW4Scene extends HW4Scene {
             halfAttackLength = 20;
             distanceAdder = 40;
         }
-
-        
 
         // making sure player position is unchanged
         let damageSource: Vec2 = Vec2.ZERO;
@@ -424,13 +398,6 @@ export default class MainHW4Scene extends HW4Scene {
         this.bossAttackDelayer.start();
     }
 
-/*    protected bridger(): void {
-        // `this` here reffers to the timer itself or something weird like that,
-        // so instead I just fire an event so it can be handled in the original this
-        let emitter = new Emitter();
-        emitter.fireEvent(BossEvent.BOSS_ATTACK_FIRE);
-    }*/
-
     protected handleBossAttack = () => {
         // can pass in the player from target in guardbehavior
         let actor = this.bossPasser;
@@ -480,7 +447,6 @@ export default class MainHW4Scene extends HW4Scene {
 
     }
 
-    
     protected sceneEnderLose(): void {
         console.log("triggering Lose...");
         let emitter = new Emitter();
@@ -538,28 +504,18 @@ export default class MainHW4Scene extends HW4Scene {
             this.boss.alpha = .9797; //SUPER SCUFFED, REVISIT IMPORTANT TODO
             this.win = false;
             this.sceneEndLoseDelayer.start();
-            // this marks it as dead for the guardbehavior, prob a better way to do this
-            
-            // TODO death animation
-            // this.emitter.fireEvent(PlayerEvent.PLAYER_KILLED);
         }
         else if (id === this.boss.id) {
             console.log("Boss killed! Ending");
-            // TODO death animation
-            // this.emitter.fireEvent(BossEvent.BOSS_KILLED);
             this.boss.animation.playIfNotAlready("DEAD");
             this.win = true;
             this.sceneEndWinDelayer.start();
             
         }
-        // IMPORTANT !
-        // TODO cause this to happen after player death animation plays!
 
         this.idPasser = id;
         console.log("starting disappear timer");
-        this.disappearTimer.start();
-        
-        
+        this.disappearTimer.start();   
     }
 
     protected disappear = () =>  {
@@ -583,9 +539,6 @@ export default class MainHW4Scene extends HW4Scene {
         this.getLayer("items").setDepth(2);
     }
 
-
-
-
     /**
      * Initializes the player in the scene
      */
@@ -599,13 +552,13 @@ export default class MainHW4Scene extends HW4Scene {
         player.health = 4;
         player.maxHealth = 4;
 
-        player.inventory.onChange = ItemEvent.INVENTORY_CHANGED
-        this.inventoryHud = new InventoryHUD(this, player.inventory, "inventorySlot", {
-            start: new Vec2(232, 24),
-            slotLayer: "slots",
-            padding: 8,
-            itemLayer: "items"
-        });
+        //  player.inventory.onChange = ItemEvent.INVENTORY_CHANGED
+        //  this.inventoryHud = new InventoryHUD(this, player.inventory, "inventorySlot", {
+        //      start: new Vec2(232, 24),
+        //      slotLayer: "slots",
+        //      padding: 8,
+        //      itemLayer: "items"
+        //  });
 
         // Give the player physics
         player.addPhysics(new AABB(Vec2.ZERO, new Vec2(8, 8)));
@@ -638,9 +591,6 @@ export default class MainHW4Scene extends HW4Scene {
         let playerHealthbar = new PlayerHealthHUD(this,player,"primary",this.HealthIcons);
         this.PlayerHealthBar = playerHealthbar;
 
-
-
-
         this.DodgeIcons = new Array(4);
         this.DodgeIcons[0] = this.add.sprite("dodgeIcon","health2");
         this.DodgeIcons[1] = this.add.sprite("dodgeIcon","health2");
@@ -650,7 +600,6 @@ export default class MainHW4Scene extends HW4Scene {
         this.DodgeIcons[1].scale.set(.25,.25);
         this.DodgeIcons[2].scale.set(.25,.25);
         this.DodgeIcons[3].scale.set(.25,.25);
-
 
         this.DodgeIcons[0].positionX = this.viewport.getCenter().x - 490;
         this.DodgeIcons[0].positionY = 0 +60;
@@ -697,132 +646,6 @@ export default class MainHW4Scene extends HW4Scene {
         this.battlers.push(boss);
     }
 
-    /**
-     * Initialize the NPCs 
-     */
-    protected initializeNPCs(): void {
-
-        // Get the object data for the red enemies
-        let red = this.load.getObject("red");
-
-        // Initialize the red healers
-        for (let i = 0; i < red.healers.length; i++) {
-            let npc = this.add.animatedSprite(NPCActor, "RedHealer", "primary");
-            npc.position.set(red.healers[i][0], red.healers[i][1]);
-            npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
-
-            npc.battleGroup = 1;
-            npc.speed = 10;
-            npc.health = 10;
-            npc.maxHealth = 10;
-            npc.navkey = "navmesh";
-
-            // Give the NPC a healthbar
-            let healthbar = new HealthbarHUD(this, npc, "primary", {size: npc.size.clone().scaled(2, 1/2), offset: npc.size.clone().scaled(0, -1/2)});
-            this.healthbars.set(npc.id, healthbar);
-
-            npc.addAI(HealerBehavior);
-            npc.animation.play("IDLE");
-            this.battlers.push(npc);
-        }
-
-        for (let i = 0; i < red.enemies.length; i++) {
-            let npc = this.add.animatedSprite(NPCActor, "RedEnemy", "primary");
-            npc.position.set(red.enemies[i][0], red.enemies[i][1]);
-            npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
-
-            // Give the NPC a healthbar
-            let healthbar = new HealthbarHUD(this, npc, "primary", {size: npc.size.clone().scaled(2, 1/2), offset: npc.size.clone().scaled(0, -1/2)});
-            this.healthbars.set(npc.id, healthbar);
-            
-            // Set the NPCs stats
-            npc.battleGroup = 1
-            npc.speed = 10;
-            npc.health = 1;
-            npc.maxHealth = 10;
-            npc.navkey = "navmesh";
-
-            npc.addAI(GuardBehavior, {target: new BasicTargetable(new Position(npc.position.x, npc.position.y)), range: 100});
-
-            // Play the NPCs "IDLE" animation 
-            npc.animation.play("IDLE");
-            // Add the NPC to the battlers array
-            this.battlers.push(npc);
-        }
-
-        // Get the object data for the blue enemies
-        let blue = this.load.getObject("blue");
-
-        // Initialize the blue enemies
-        for (let i = 0; i < blue.enemies.length; i++) {
-            let npc = this.add.animatedSprite(NPCActor, "boss", "primary");
-            npc.position.set(blue.enemies[i][0], blue.enemies[i][1]);
-            npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
-
-            // Give the NPCS their healthbars
-            let healthbar = new HealthbarHUD(this, npc, "primary", {size: npc.size.clone().scaled(2, 1/2), offset: npc.size.clone().scaled(0, -1/2)});
-            this.healthbars.set(npc.id, healthbar);
-
-            npc.battleGroup = 2
-            npc.speed = 10;
-            npc.health = 1;
-            npc.maxHealth = 10;
-            npc.navkey = "navmesh";
-
-            // Give the NPCs their AI
-            npc.addAI(GuardBehavior, {target: this.battlers[0], range: 100});
-
-            // Play the NPCs "IDLE" animation 
-            npc.animation.play("DOWN");
-
-            this.battlers.push(npc);
-        }
-
-        // Initialize the blue healers
-        for (let i = 0; i < blue.healers.length; i++) {
-            
-            let npc = this.add.animatedSprite(NPCActor, "BlueHealer", "primary");
-            npc.position.set(blue.healers[i][0], blue.healers[i][1]);
-            npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
-
-            npc.battleGroup = 2;
-            npc.speed = 10;
-            npc.health = 1;
-            npc.maxHealth = 10;
-            npc.navkey = "navmesh";
-
-            let healthbar = new HealthbarHUD(this, npc, "primary", {size: npc.size.clone().scaled(2, 1/2), offset: npc.size.clone().scaled(0, -1/2)});
-            this.healthbars.set(npc.id, healthbar);
-
-            npc.addAI(HealerBehavior);
-            npc.animation.play("IDLE");
-            this.battlers.push(npc);
-        }
-
-
-    }
-
-    /**
-     * Initialize the items in the scene (healthpacks and laser guns)
-     */
-    protected initializeItems(): void {
-        let laserguns = this.load.getObject("laserguns");
-        this.laserguns = new Array<LaserGun>(laserguns.items.length);
-        for (let i = 0; i < laserguns.items.length; i++) {
-            let sprite = this.add.sprite("laserGun", "primary");
-            let line = <Line>this.add.graphic(GraphicType.LINE, "primary", {start: Vec2.ZERO, end: Vec2.ZERO});
-            this.laserguns[i] = LaserGun.create(sprite, line);
-            this.laserguns[i].position.set(laserguns.items[i][0], laserguns.items[i][1]);
-        }
-
-        let healthpacks = this.load.getObject("healthpacks");
-        this.healthpacks = new Array<Healthpack>(healthpacks.items.length);
-        for (let i = 0; i < healthpacks.items.length; i++) {
-            let sprite = this.add.sprite("healthpack", "primary");
-            this.healthpacks[i] = new Healthpack(sprite);
-            this.healthpacks[i].position.set(healthpacks.items[i][0], healthpacks.items[i][1]);
-        }
-    }
     /**
      * Initializes the navmesh graph used by the NPCs in the HW3Scene. This method is a little buggy, and
      * and it skips over some of the positions on the tilemap. If you can fix my navmesh generation algorithm,

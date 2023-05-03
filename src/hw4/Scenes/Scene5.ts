@@ -93,6 +93,7 @@ export default class MainHW4Scene extends HW4Scene {
     private godMode: boolean;
 
     private win: boolean;
+    private numBosses: number;
    
 
 
@@ -176,17 +177,20 @@ export default class MainHW4Scene extends HW4Scene {
 
         // Create the boss
 
-        let bossSpeed = 20;
+        let bossSpeed = 10;
         let bossHealth = 10;
         let bossMaxHealth = 10;
         let bossX = 200;
-        let bossY = 200;
+        let bossY = 250;
         let bossDamage = 2;
-        let bossAttackSpeed = 1000;
+        let bossAttackSpeed = 1250;
         this.initializeBoss(bossSpeed, bossHealth, bossMaxHealth, bossX, bossY, bossDamage, bossAttackSpeed);
+        this.initializeBoss(20, bossHealth, bossMaxHealth, bossX, bossY-50, bossDamage-1, bossAttackSpeed);
+
+        this.numBosses = 2;
 
         // make sure this is never longer than the timer in the attack.ts action file
-        this.bossAttackDelayer = new Timer(500, this.handleBossAttack);
+        this.bossAttackDelayer = new Timer(1000, this.handleBossAttack);
 
         // Subscribe to relevant events
         this.receiver.subscribe("healthpack");
@@ -231,7 +235,7 @@ export default class MainHW4Scene extends HW4Scene {
         while (this.receiver.hasNextEvent()) {
             this.handleEvent(this.receiver.getNextEvent());
         }
-        this.inventoryHud.update(deltaT);
+        // this.inventoryHud.update(deltaT);
         //This is where we could update the player health bar
         // this.handleHealthChange(player.health,player.maxHealth);
         this.PlayerHealthBar.update(deltaT);
@@ -440,6 +444,7 @@ export default class MainHW4Scene extends HW4Scene {
         let halfAttackWidth = 50;
         let halfAttackLength = 25;
 
+
         this.attackMarker2 = <Rect>this.add.graphic(GraphicType.RECT, "primary", { position: damageSource,
             size: new Vec2(halfAttackWidth*2, halfAttackLength*2)});
         this.attackMarker2.color = new Color(255, 0, 0, .40);
@@ -451,12 +456,12 @@ export default class MainHW4Scene extends HW4Scene {
         let bottom = damageSource.y + halfAttackLength;
         for(let i = 0; i < this.battlers.length; i++){
             let b = this.battlers[i];
-            if(b.id != actor.id && // prevents the boss from hitting themselves
+            if( b.id === this.player.id && // prevents the boss from hitting themselves
                 b.position.x - (b.size.x/2) < right &&
                 b.position.x + (b.size.x/2)> left &&
                 b.position.y + (b.size.y/2) > top &&
                 b.position.y - (b.size.y/2) < bottom) { 
-                    if (!this.godMode){
+                    if (!this.godMode  ){
                         this.dealDamage(b, pseudoDamage);
                         //Play attack sound effect
                         this.emitter.fireEvent(GameEventType.PLAY_SOUND, {key: "veryHeavyAttack", loop: false, holdReference: false});
@@ -543,14 +548,21 @@ export default class MainHW4Scene extends HW4Scene {
             // TODO death animation
             // this.emitter.fireEvent(PlayerEvent.PLAYER_KILLED);
         }
-        else if (id === this.boss.id) {
-            console.log("Boss killed! Ending");
-            // TODO death animation
-            // this.emitter.fireEvent(BossEvent.BOSS_KILLED);
-            this.boss.animation.playIfNotAlready("DEAD");
-            this.win = true;
-            this.sceneEndWinDelayer.start();
-            
+        else {
+            this.numBosses--;
+            for(let i = 0; i < this.battlers.length; i++){
+                if(id === this.battlers[i].id){
+                    console.log("Boss killed! Ending");
+                    // TODO death animation
+                    // this.emitter.fireEvent(BossEvent.BOSS_KILLED);
+                    this.battlers[i].animation.playIfNotAlready("DEAD");
+                    
+                }
+            }
+            if(this.numBosses <= 0){
+                this.win = true;
+                this.sceneEndWinDelayer.start();
+            }
         }
         // IMPORTANT !
         // TODO cause this to happen after player death animation plays!
@@ -599,13 +611,13 @@ export default class MainHW4Scene extends HW4Scene {
         player.health = 4;
         player.maxHealth = 4;
 
-        player.inventory.onChange = ItemEvent.INVENTORY_CHANGED
-        this.inventoryHud = new InventoryHUD(this, player.inventory, "inventorySlot", {
-            start: new Vec2(232, 24),
-            slotLayer: "slots",
-            padding: 8,
-            itemLayer: "items"
-        });
+        // player.inventory.onChange = ItemEvent.INVENTORY_CHANGED
+        // this.inventoryHud = new InventoryHUD(this, player.inventory, "inventorySlot", {
+        //    start: new Vec2(232, 24),
+        //    slotLayer: "slots",
+        //    padding: 8,
+        //    itemLayer: "items"
+        //  });
 
         // Give the player physics
         player.addPhysics(new AABB(Vec2.ZERO, new Vec2(8, 8)));

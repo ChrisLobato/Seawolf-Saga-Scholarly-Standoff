@@ -17,6 +17,7 @@ export default class BasicBattler implements Battler {
     protected _health: number;
     protected _battleGroup: number;
     protected _speed: number;
+    protected _damage: number;
     protected _active: boolean;
 
     public constructor(owner: Unique & Positioned) {
@@ -28,6 +29,7 @@ export default class BasicBattler implements Battler {
         this.health = 0;
         this.battleGroup = 0;
         this.speed = 0;
+        
         this.battlerActive = true;
     }
     
@@ -51,6 +53,9 @@ export default class BasicBattler implements Battler {
 
     public get speed(): number { return this._speed; }
     public set speed(speed: number) { this._speed = speed; }
+
+    public get damage(): number { return this._damage; }
+    public set damage(damage: number) { this._damage = damage; }
 
     public get inventory(): Inventory { return this._inventory; }
     protected set inventory(inventory: Inventory) { this._inventory = inventory; }

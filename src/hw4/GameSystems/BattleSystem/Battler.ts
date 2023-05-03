@@ -25,6 +25,10 @@ export default interface Battler extends TargetableEntity, Unique {
     get speed(): number;
     set speed(value: number);
 
+    /** The battlers current speed */
+    get damage(): number;
+    set damage(value: number);
+
     /** The battlers inventory of items */
     get inventory(): Inventory;
 

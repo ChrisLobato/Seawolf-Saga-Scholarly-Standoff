@@ -85,6 +85,10 @@ export default class NPCActor extends AnimatedSprite implements Battler, Targeti
     public get speed(): number { return this.battler.speed; }
     public set speed(speed: number) { this.battler.speed = speed; }
 
+    public get damage(): number { return this.battler.damage; }
+    public set damage(damage: number) { this.battler.damage = damage; }
+
+
     public override setScene(scene: HW4Scene): void { this.scene = scene; }
     public override getScene(): HW4Scene { return this.scene; }
 

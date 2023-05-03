@@ -3,11 +3,8 @@ import { UIElementType } from "../../Wolfie2D/Nodes/UIElements/UIElementTypes";
 import Layer from "../../Wolfie2D/Scene/Layer";
 import Scene from "../../Wolfie2D/Scene/Scene";
 import Color from "../../Wolfie2D/Utils/Color";
-import Label from "../../Wolfie2D/Nodes/UIElements/Label";
 import MainHW4Scene from "./MainHW4Scene";
 import GameEvent from "../../Wolfie2D/Events/GameEvent";
-import AstarDemoScene from "./AstarDemoScene";
-import GuardDemoScene from "./GuardDemoScene";
 import HelpScreen from "./HelpScreen";
 import ControlsScreen from "./ControlsScreen";
 import LevelsScreen from "./LevelsScreen";
@@ -18,8 +15,6 @@ export default class MainMenu extends Scene {
     // Layers, for multiple main menu screens
     private mainMenu: Layer;
     private background: Layer;
-    private about: Layer;
-    private control: Layer;
 
     public loadScene(){
         this.load.image("MainMenu", "hw4_assets/sprites/MainMenu.png");

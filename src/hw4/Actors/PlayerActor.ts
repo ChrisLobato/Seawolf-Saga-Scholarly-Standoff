@@ -72,6 +72,12 @@ export default class PlayerActor extends AnimatedSprite implements Battler {
     set speed(value: number) {
         this.battler.speed = value;
     }
+    get damage(): number {
+        return this.battler.damage;
+    }
+    set damage(value: number) {
+        this.battler.damage = value;
+    }
     get inventory(): Inventory {
         return this.battler.inventory;
     }
