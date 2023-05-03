@@ -41,9 +41,9 @@ import Sprite from "../../Wolfie2D/Nodes/Sprites/Sprite";
 import Emitter from "../../Wolfie2D/Events/Emitter";
 import AnimatedSprite from "../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
 import MainMenu from "./MainMenu";
+import Scene2 from "./Scene2";
 import PlayerHealthHUD from "../GameSystems/HUD/PlayerHealthHUD";
 import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
-import Scene5 from "./Scene5";
 
 const BattlerGroups = {
     RED: 1,
@@ -175,7 +175,18 @@ export default class MainHW4Scene extends HW4Scene {
         // this.initializeNPCs();
 
         // Create the boss
-        this.initializeBoss();
+
+        let bossSpeed = 20;
+        let bossHealth = 10;
+        let bossMaxHealth = 10;
+        let bossX = 200;
+        let bossY = 200;
+        let bossDamage = 2;
+        let bossAttackSpeed = 1000;
+        this.initializeBoss(bossSpeed, bossHealth, bossMaxHealth, bossX, bossY, bossDamage, bossAttackSpeed);
+
+        // make sure this is never longer than the timer in the attack.ts action file
+        this.bossAttackDelayer = new Timer(500, this.handleBossAttack);
 
         // Subscribe to relevant events
         this.receiver.subscribe("healthpack");
@@ -196,9 +207,7 @@ export default class MainHW4Scene extends HW4Scene {
         this.receiver.subscribe(PlayerEvent.CHEAT_GOD_MODE);
         this.receiver.subscribe(PlayerEvent.CHEAT_ADVANCE_LEVEL);
 
-        // REVISIT, change as you would like, make SURE it never is longer
-        // than the timer in the attack.ts action file
-        this.bossAttackDelayer = new Timer(1000, this.handleBossAttack);
+        
 
         this.sceneEndWinDelayer = new Timer(2000, this.sceneEnderWin);
         this.sceneEndLoseDelayer = new Timer(2000, this.sceneEnderLose);
@@ -425,10 +434,11 @@ export default class MainHW4Scene extends HW4Scene {
     protected handleBossAttack = () => {
         // can pass in the player from target in guardbehavior
         let actor = this.bossPasser;
+        let pseudoDamage = actor.battleGroup;
         let position = actor.position;
         let damageSource = position;
-        let halfAttackWidth = 100;
-        let halfAttackLength = 60;
+        let halfAttackWidth = 50;
+        let halfAttackLength = 25;
 
         this.attackMarker2 = <Rect>this.add.graphic(GraphicType.RECT, "primary", { position: damageSource,
             size: new Vec2(halfAttackWidth*2, halfAttackLength*2)});
@@ -447,7 +457,7 @@ export default class MainHW4Scene extends HW4Scene {
                 b.position.y + (b.size.y/2) > top &&
                 b.position.y - (b.size.y/2) < bottom) { 
                     if (!this.godMode){
-                        this.dealDamage(b, 2);
+                        this.dealDamage(b, pseudoDamage);
                         //Play attack sound effect
                         this.emitter.fireEvent(GameEventType.PLAY_SOUND, {key: "veryHeavyAttack", loop: false, holdReference: false});
                     } else {
@@ -489,7 +499,7 @@ export default class MainHW4Scene extends HW4Scene {
         this.viewport.setFocus(size);
         this.viewport.setZoomLevel(1);
         this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: "bossMusic1"});
-        this.sceneManager.changeToScene(Scene5);
+        this.sceneManager.changeToScene(MainMenu);
     }
     protected handleSceneEndLose (): void {
         // recentering the viewport
@@ -664,22 +674,23 @@ export default class MainHW4Scene extends HW4Scene {
     /**
      * Initialize the boss
      */
-    protected initializeBoss(): void {
+    protected initializeBoss(speed: number, health: number, maxHealth: number,
+         bossX: number, bossY: number, damage: number, attackSpeed: number): void {
         let boss = this.add.animatedSprite(NPCActor, "boss", "primary");
         boss.scale.set(1.5, 1.5);
-        boss.position.set(200, 250);
+        boss.position.set(bossX, bossY);
         boss.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
-        boss.battleGroup = 2
-        boss.speed = 15;
-        boss.health = 10;
-        boss.maxHealth = 10;
+        boss.battleGroup = damage; //stores the damage value in the battleGroup field
+        boss.speed = speed;
+        boss.health = health;
+        boss.maxHealth = maxHealth;
         boss.navkey = "navmesh";
         // Give the NPC a healthbar
         let healthbar = new HealthbarHUD(this, boss, "primary", {size: boss.size.clone().scaled(2, 1/2), offset: boss.size.clone().scaled(0, -1/2)});
         this.healthbars.set(boss.id, healthbar);
 
         // Give the NPCs their AI
-        boss.addAI(GuardBehavior, {target: this.player, range: 100, time: 1250});
+        boss.addAI(GuardBehavior, {target: this.player, range: 100, time: attackSpeed});
         this.boss = boss;
         // Play the NPCs "IDLE" animation 
         boss.animation.play("DOWN");
@@ -930,28 +941,11 @@ export default class MainHW4Scene extends HW4Scene {
 
     }
 
+    
     /**
      * Saves on loading time
      */
     public unloadScene(): void {
-        if(this.win){
-            console.log("keeping a bunch of stuff from scene1");
-            this.load.keepImage("healthIcon");
-            this.load.keepImage("dodgeIcon");
-            
-            this.load.keepSpritesheet("player1");
-            this.load.keepSpritesheet("boss");
-
-            this.load.keepAudio("heavyAttack");
-            this.load.keepAudio("lightAttack");
-            this.load.keepAudio("playerDamaged");
-            this.load.keepAudio("bossMusic1");
-            this.load.keepAudio("veryHeavyAttack");
-
-            this.load.keepTilemap("level");
-        }
-        else {
-            console.log("not keeping anything, resetting to home screen");
-        }    
+        console.log("not keeping anything, resetting to home screen");
     }
 }

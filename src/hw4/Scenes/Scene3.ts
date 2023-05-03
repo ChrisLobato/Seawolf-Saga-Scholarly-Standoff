@@ -938,6 +938,9 @@ export default class MainHW4Scene extends HW4Scene {
     public unloadScene(): void {
         if(this.win){
             console.log("keeping a bunch of stuff from scene2");
+            this.load.keepImage("healthIcon");
+            this.load.keepImage("dodgeIcon");
+            
             this.load.keepSpritesheet("player1");
             this.load.keepSpritesheet("boss");
 

@@ -175,7 +175,18 @@ export default class MainHW4Scene extends HW4Scene {
         // this.initializeNPCs();
 
         // Create the boss
-        this.initializeBoss();
+
+        let bossSpeed = 10;
+        let bossHealth = 10;
+        let bossMaxHealth = 10;
+        let bossX = 200;
+        let bossY = 200;
+        let bossDamage = 2;
+        let bossAttackSpeed = 1250;
+        this.initializeBoss(bossSpeed, bossHealth, bossMaxHealth, bossX, bossY, bossDamage, bossAttackSpeed);
+
+        // make sure this is never longer than the timer in the attack.ts action file
+        this.bossAttackDelayer = new Timer(1000, this.handleBossAttack);
 
         // Subscribe to relevant events
         this.receiver.subscribe("healthpack");
@@ -196,9 +207,7 @@ export default class MainHW4Scene extends HW4Scene {
         this.receiver.subscribe(PlayerEvent.CHEAT_GOD_MODE);
         this.receiver.subscribe(PlayerEvent.CHEAT_ADVANCE_LEVEL);
 
-        // REVISIT, change as you would like, make SURE it never is longer
-        // than the timer in the attack.ts action file
-        this.bossAttackDelayer = new Timer(1000, this.handleBossAttack);
+        
 
         this.sceneEndWinDelayer = new Timer(2000, this.sceneEnderWin);
         this.sceneEndLoseDelayer = new Timer(2000, this.sceneEnderLose);
@@ -425,6 +434,7 @@ export default class MainHW4Scene extends HW4Scene {
     protected handleBossAttack = () => {
         // can pass in the player from target in guardbehavior
         let actor = this.bossPasser;
+        let pseudoDamage = actor.battleGroup;
         let position = actor.position;
         let damageSource = position;
         let halfAttackWidth = 50;
@@ -447,7 +457,7 @@ export default class MainHW4Scene extends HW4Scene {
                 b.position.y + (b.size.y/2) > top &&
                 b.position.y - (b.size.y/2) < bottom) { 
                     if (!this.godMode){
-                        this.dealDamage(b, 3);
+                        this.dealDamage(b, pseudoDamage);
                         //Play attack sound effect
                         this.emitter.fireEvent(GameEventType.PLAY_SOUND, {key: "veryHeavyAttack", loop: false, holdReference: false});
                     } else {
@@ -664,22 +674,23 @@ export default class MainHW4Scene extends HW4Scene {
     /**
      * Initialize the boss
      */
-    protected initializeBoss(): void {
+    protected initializeBoss(speed: number, health: number, maxHealth: number,
+         bossX: number, bossY: number, damage: number, attackSpeed: number): void {
         let boss = this.add.animatedSprite(NPCActor, "boss", "primary");
         boss.scale.set(1.5, 1.5);
-        boss.position.set(200, 200);
+        boss.position.set(bossX, bossY);
         boss.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
-        boss.battleGroup = 2
-        boss.speed = 10;
-        boss.health = 10;
-        boss.maxHealth = 10;
+        boss.battleGroup = damage; //stores the damage value in the battleGroup field
+        boss.speed = speed;
+        boss.health = health;
+        boss.maxHealth = maxHealth;
         boss.navkey = "navmesh";
         // Give the NPC a healthbar
         let healthbar = new HealthbarHUD(this, boss, "primary", {size: boss.size.clone().scaled(2, 1/2), offset: boss.size.clone().scaled(0, -1/2)});
         this.healthbars.set(boss.id, healthbar);
 
         // Give the NPCs their AI
-        boss.addAI(GuardBehavior, {target: this.player, range: 100, time: 1250});
+        boss.addAI(GuardBehavior, {target: this.player, range: 100, time: attackSpeed});
         this.boss = boss;
         // Play the NPCs "IDLE" animation 
         boss.animation.play("DOWN");
@@ -935,7 +946,10 @@ export default class MainHW4Scene extends HW4Scene {
      */
     public unloadScene(): void {
         if(this.win){
-            console.log("keeping a bunch of stuff from scene2");
+            console.log("keeping a bunch of stuff from scene1");
+            this.load.keepImage("healthIcon");
+            this.load.keepImage("dodgeIcon");
+            
             this.load.keepSpritesheet("player1");
             this.load.keepSpritesheet("boss");
 
