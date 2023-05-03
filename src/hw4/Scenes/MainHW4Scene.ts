@@ -1,12 +1,10 @@
 import PositionGraph from "../../Wolfie2D/DataTypes/Graphs/PositionGraph";
-import Actor from "../../Wolfie2D/DataTypes/Interfaces/Actor";
 import AABB from "../../Wolfie2D/DataTypes/Shapes/AABB";
 import Vec2 from "../../Wolfie2D/DataTypes/Vec2";
 import GameEvent from "../../Wolfie2D/Events/GameEvent";
 import GameNode from "../../Wolfie2D/Nodes/GameNode";
 import Graphic from "../../Wolfie2D/Nodes/Graphic";
 import { GraphicType } from "../../Wolfie2D/Nodes/Graphics/GraphicTypes";
-import Line from "../../Wolfie2D/Nodes/Graphics/Line";
 import Rect from "../../Wolfie2D/Nodes/Graphics/Rect";
 import OrthogonalTilemap from "../../Wolfie2D/Nodes/Tilemaps/OrthogonalTilemap";
 import Navmesh from "../../Wolfie2D/Pathfinding/Navmesh";
@@ -20,7 +18,6 @@ import MathUtils from "../../Wolfie2D/Utils/MathUtils";
 import NPCActor from "../Actors/NPCActor";
 import PlayerActor from "../Actors/PlayerActor";
 import GuardBehavior from "../AI/NPC/NPCBehavior/GaurdBehavior";
-import HealerBehavior from "../AI/NPC/NPCBehavior/HealerBehavior";
 import PlayerAI from "../AI/Player/PlayerAI";
 import PlayerController from "../AI/Player/PlayerController";
 import { ItemEvent, PlayerEvent, BattlerEvent, BossEvent, SceneEvents } from "../Events";
@@ -33,8 +30,6 @@ import Item from "../GameSystems/ItemSystem/Item";
 import Healthpack from "../GameSystems/ItemSystem/Items/Healthpack";
 import LaserGun from "../GameSystems/ItemSystem/Items/LaserGun";
 import { ClosestPositioned } from "../GameSystems/Searching/HW4Reducers";
-import BasicTargetable from "../GameSystems/Targeting/BasicTargetable";
-import Position from "../GameSystems/Targeting/Position";
 import AstarStrategy from "../Pathfinding/AstarStrategy";
 import HW4Scene from "./HW4Scene";
 import Sprite from "../../Wolfie2D/Nodes/Sprites/Sprite";
@@ -44,11 +39,6 @@ import MainMenu from "./MainMenu";
 import Scene2 from "./Scene2";
 import PlayerHealthHUD from "../GameSystems/HUD/PlayerHealthHUD";
 import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
-
-const BattlerGroups = {
-    RED: 1,
-    BLUE: 2
-} as const;
 
 export default class MainHW4Scene extends HW4Scene {
 
@@ -148,10 +138,7 @@ export default class MainHW4Scene extends HW4Scene {
 
         this.initLayers();
         
-        // Create the player
         this.initializePlayer();
-        // this.initializeItems();
-
         this.initializeNavmesh();
 
         // Create the boss/es
@@ -162,7 +149,10 @@ export default class MainHW4Scene extends HW4Scene {
         let bossY = 200;
         let bossDamage = 2;
         let bossAttackSpeed = 1250;
-        this.initializeBoss(bossSpeed, bossHealth, bossMaxHealth, bossX, bossY, bossDamage, bossAttackSpeed);
+        let bossAttackWidth = 50;
+        let bossAttackLength = 25;
+        this.initializeBoss(bossSpeed, bossHealth, bossMaxHealth, bossX, bossY, 
+            bossDamage, bossAttackSpeed, bossAttackWidth, bossAttackLength);
 
         // make sure this is never longer than the timer in the attack.ts action file
         this.bossAttackDelayer = new Timer(1000, this.handleBossAttack);
@@ -210,11 +200,6 @@ export default class MainHW4Scene extends HW4Scene {
         }
         this.PlayerHealthBar.update(deltaT);
         this.healthbars.forEach(healthbar => healthbar.update(deltaT));
-
-        // OLD, can be useful to learn from 
-        // this.inventoryHud.update(deltaT);
-        // This is where we could update the player health bar
-        // this.handleHealthChange(player.health,player.maxHealth);
     }
 
     /**
@@ -401,11 +386,11 @@ export default class MainHW4Scene extends HW4Scene {
     protected handleBossAttack = () => {
         // can pass in the player from target in guardbehavior
         let actor = this.bossPasser;
-        let pseudoDamage = actor.battleGroup;
+        let damage = actor.damage;
         let position = actor.position;
         let damageSource = position;
-        let halfAttackWidth = 50;
-        let halfAttackLength = 25;
+        let halfAttackWidth = actor.attackWidth;
+        let halfAttackLength = actor.attackLength;
 
         this.attackMarker2 = <Rect>this.add.graphic(GraphicType.RECT, "primary", { position: damageSource,
             size: new Vec2(halfAttackWidth*2, halfAttackLength*2)});
@@ -424,7 +409,7 @@ export default class MainHW4Scene extends HW4Scene {
                 b.position.y + (b.size.y/2) > top &&
                 b.position.y - (b.size.y/2) < bottom) { 
                     if (!this.godMode){
-                        this.dealDamage(b, pseudoDamage);
+                        this.dealDamage(b, damage);
                         //Play attack sound effect
                         this.emitter.fireEvent(GameEventType.PLAY_SOUND, {key: "veryHeavyAttack", loop: false, holdReference: false});
                     } else {
@@ -552,14 +537,6 @@ export default class MainHW4Scene extends HW4Scene {
         player.health = 4;
         player.maxHealth = 4;
 
-        //  player.inventory.onChange = ItemEvent.INVENTORY_CHANGED
-        //  this.inventoryHud = new InventoryHUD(this, player.inventory, "inventorySlot", {
-        //      start: new Vec2(232, 24),
-        //      slotLayer: "slots",
-        //      padding: 8,
-        //      itemLayer: "items"
-        //  });
-
         // Give the player physics
         player.addPhysics(new AABB(Vec2.ZERO, new Vec2(8, 8)));
 
@@ -623,15 +600,17 @@ export default class MainHW4Scene extends HW4Scene {
     /**
      * Initialize the boss
      */
-    protected initializeBoss(speed: number, health: number, maxHealth: number,
-         bossX: number, bossY: number, damage: number, attackSpeed: number): void {
+    protected initializeBoss(speed: number, health: number, maxHealth: number, bossX: number, bossY: number,
+          damage: number, attackSpeed: number, attackWidth: number, attackLength: number): void {
         let boss = this.add.animatedSprite(NPCActor, "boss", "primary");
         boss.scale.set(1.5, 1.5);
         boss.position.set(bossX, bossY);
         boss.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
-        boss.battleGroup = damage; //stores the damage value in the battleGroup field
+        boss.damage = damage; //stores the damage value in the battleGroup field
         boss.speed = speed;
         boss.health = health;
+        boss.attackWidth = attackWidth;
+        boss.attackLength = attackLength;
         boss.maxHealth = maxHealth;
         boss.navkey = "navmesh";
         // Give the NPC a healthbar

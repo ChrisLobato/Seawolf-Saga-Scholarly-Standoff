@@ -88,6 +88,10 @@ export default class NPCActor extends AnimatedSprite implements Battler, Targeti
     public get damage(): number { return this.battler.damage; }
     public set damage(damage: number) { this.battler.damage = damage; }
 
+    public get attackWidth(): number { return this.battler.attackWidth; }
+    public set attackWidth(attackWidth: number) { this.battler.attackWidth = attackWidth; }
+    public get attackLength(): number { return this.battler.attackLength; }
+    public set attackLength(attackLength: number) { this.battler.attackLength = attackLength; }
 
     public override setScene(scene: HW4Scene): void { this.scene = scene; }
     public override getScene(): HW4Scene { return this.scene; }

@@ -17,8 +17,11 @@ export default class BasicBattler implements Battler {
     protected _health: number;
     protected _battleGroup: number;
     protected _speed: number;
-    protected _damage: number;
     protected _active: boolean;
+
+    protected _damage: number;
+    protected _attackWidth: number;
+    protected _attackLength: number;
 
     public constructor(owner: Unique & Positioned) {
         this._owner = owner;
@@ -54,14 +57,19 @@ export default class BasicBattler implements Battler {
     public get speed(): number { return this._speed; }
     public set speed(speed: number) { this._speed = speed; }
 
-    public get damage(): number { return this._damage; }
-    public set damage(damage: number) { this._damage = damage; }
-
     public get inventory(): Inventory { return this._inventory; }
     protected set inventory(inventory: Inventory) { this._inventory = inventory; }
 
     public get battlerActive(): boolean { return this._active; }
     public set battlerActive(value: boolean) { this._active = value; }
+
+    public get damage(): number { return this._damage; }
+    public set damage(damage: number) { this._damage = damage; }
+
+    public get attackWidth(): number { return this._attackWidth; }
+    public set attackWidth(attackWidth: number) { this._attackWidth = attackWidth; }
+    public get attackLength(): number { return this._attackLength; }
+    public set attackLength(attackLength: number) { this._attackLength = attackLength; }
     
     public getTargeting(): TargetingEntity[] { return this._targetable.getTargeting(); }
     public addTargeting(targeting: TargetingEntity): void { this._targetable.addTargeting(targeting); }
