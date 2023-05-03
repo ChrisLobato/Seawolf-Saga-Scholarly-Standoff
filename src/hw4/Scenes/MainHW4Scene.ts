@@ -91,6 +91,8 @@ export default class MainHW4Scene extends HW4Scene {
 
     // Cheat Flags
     private godMode: boolean;
+
+    private win: boolean;
    
 
 
@@ -524,6 +526,7 @@ export default class MainHW4Scene extends HW4Scene {
             console.log("played death animation");
             //marks the player as dead for guardbehavior
             this.boss.alpha = .9797; //SUPER SCUFFED, REVISIT IMPORTANT TODO
+            this.win = false;
             this.sceneEndLoseDelayer.start();
             // this marks it as dead for the guardbehavior, prob a better way to do this
             
@@ -535,6 +538,7 @@ export default class MainHW4Scene extends HW4Scene {
             // TODO death animation
             // this.emitter.fireEvent(BossEvent.BOSS_KILLED);
             this.boss.animation.playIfNotAlready("DEAD");
+            this.win = true;
             this.sceneEndWinDelayer.start();
             
         }
@@ -924,5 +928,27 @@ export default class MainHW4Scene extends HW4Scene {
         }
         return true;
 
+    }
+
+    /**
+     * Saves on loading time
+     */
+    public unloadScene(): void {
+        if(this.win){
+            console.log("keeping a bunch of stuff from scene2");
+            this.load.keepSpritesheet("player1");
+            this.load.keepSpritesheet("boss");
+
+            this.load.keepAudio("heavyAttack");
+            this.load.keepAudio("lightAttack");
+            this.load.keepAudio("playerDamaged");
+            this.load.keepAudio("bossMusic1");
+            this.load.keepAudio("veryHeavyAttack");
+
+            this.load.keepTilemap("level");
+        }
+        else {
+            console.log("not keeping anything, resetting to home screen");
+        }    
     }
 }

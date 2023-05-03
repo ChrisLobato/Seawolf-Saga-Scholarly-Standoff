@@ -926,4 +926,11 @@ export default class MainHW4Scene extends HW4Scene {
         return true;
 
     }
+
+    /**
+     * Saves on loading time
+     */
+    public unloadScene(): void {
+        console.log("not keeping anything, resetting to home screen");
+    }
 }
