@@ -147,15 +147,16 @@ export default class MainHW4Scene extends HW4Scene {
         let bossMaxHealth = 10;
         let bossX = 200;
         let bossY = 200;
-        let bossDamage = 2;
-        let bossAttackSpeed = 1250;
+        let bossDamage = 1;
         let bossAttackWidth = 50;
         let bossAttackLength = 25;
+        let bossAttackSpeed = 1250;
+        let bossAttackDelayDiff = 250;
         this.initializeBoss(bossSpeed, bossHealth, bossMaxHealth, bossX, bossY, 
             bossDamage, bossAttackSpeed, bossAttackWidth, bossAttackLength);
 
         // make sure this is never longer than the timer in the attack.ts action file
-        this.bossAttackDelayer = new Timer(1000, this.handleBossAttack);
+        this.bossAttackDelayer = new Timer(bossAttackSpeed-bossAttackDelayDiff, this.handleBossAttack);
 
         // Subscribe to relevant events
         this.receiver.subscribe("healthpack");
@@ -229,7 +230,7 @@ export default class MainHW4Scene extends HW4Scene {
                 break;
             }
             case PlayerEvent.DODGE_CHANGE: {
-                console.log("HERE");
+                // console.log("HERE");
                 this.handleDodgeChargeChange(event.data.get("curchrg"),event.data.get("maxchrg"));
                 break;
             }
@@ -294,8 +295,8 @@ export default class MainHW4Scene extends HW4Scene {
 
     protected handleAttack(player: PlayerActor, controller: PlayerController, type: string): void {
         // console.log('attack in main at', player.position.toString(), 'facing', controller.faceDir.toString());
-        console.log("handle attack called");
-
+        // console.log("handle attack called");
+        
         // REVISIT random values for testing
         let halfAttackWidth = 0;
         let halfAttackLength = 0;
@@ -385,6 +386,12 @@ export default class MainHW4Scene extends HW4Scene {
 
     protected handleBossAttack = () => {
         // can pass in the player from target in guardbehavior
+
+        // IMPORTANT you already have the boss, and the player is globally located via this.player ,
+        // so it is quite easy to get the attack to be in the direction of the player.
+        // You can make it in 4 set directions, as the player's handleAttack does,
+        // or you can make it vector straight to the player just as the dodge works (found in PlayerState.ts)
+
         let actor = this.bossPasser;
         let damage = actor.damage;
         let position = actor.position;
@@ -425,10 +432,10 @@ export default class MainHW4Scene extends HW4Scene {
     }
 
     protected dealDamage(battler: AnimatedSprite & Battler, damage: number) {
-        console.log("battler health before:", battler.health);
-        console.log("this battler took damage:", battler.id);
+        // console.log("this battler took damage:", battler.id);
+        // console.log("battler health before:", battler.health);
         battler.health-= damage;
-        console.log("battler health after:", battler.health);
+        // console.log("battler health after:", battler.health);
 
     }
 
@@ -484,7 +491,6 @@ export default class MainHW4Scene extends HW4Scene {
             console.log("player killed! Ending");
             
             this.player.animation.play("DEAD");
-            console.log("played death animation");
             //marks the player as dead for guardbehavior
             this.boss.alpha = .9797; //SUPER SCUFFED, REVISIT IMPORTANT TODO
             this.win = false;
@@ -499,15 +505,15 @@ export default class MainHW4Scene extends HW4Scene {
         }
 
         this.idPasser = id;
-        console.log("starting disappear timer");
+        // console.log("starting disappear timer");
         this.disappearTimer.start();   
     }
 
     protected disappear = () =>  {
-        console.log("in disappear");
+        // console.log("in disappear");
         let id = this.idPasser;
         let battler = this.battlers.find(b => b.id === id);
-        console.log("the passed ID", id);
+        // console.log("the passed ID", id);
 
         if (battler) {
             battler.battlerActive = false;
@@ -565,7 +571,7 @@ export default class MainHW4Scene extends HW4Scene {
         this.HealthIcons[3].positionY = 0 +30;
 
         //Creates a Wolfie Sprite healthbar
-        let playerHealthbar = new PlayerHealthHUD(this,player,"primary",this.HealthIcons);
+        let playerHealthbar = new PlayerHealthHUD(this,player,"slots",this.HealthIcons);
         this.PlayerHealthBar = playerHealthbar;
 
         this.DodgeIcons = new Array(4);
@@ -612,6 +618,7 @@ export default class MainHW4Scene extends HW4Scene {
         boss.attackWidth = attackWidth;
         boss.attackLength = attackLength;
         boss.maxHealth = maxHealth;
+        boss.battleGroup = 2;
         boss.navkey = "navmesh";
         // Give the NPC a healthbar
         let healthbar = new HealthbarHUD(this, boss, "primary", {size: boss.size.clone().scaled(2, 1/2), offset: boss.size.clone().scaled(0, -1/2)});
