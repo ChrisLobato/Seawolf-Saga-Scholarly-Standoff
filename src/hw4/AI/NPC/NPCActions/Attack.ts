@@ -27,7 +27,7 @@ export default class Attack extends NPCAction {
     
     public performAction(target: TargetableEntity): void {
         if(!this.isAttacking){
-            console.log("ATTACKING");
+            console.log("BOSS #", this.actor.id, "ATTACKING");
             this.isAttacking = true;
             this.actor.animation.playIfNotAlready("ATTACK_DOWN");
             this.emitter.fireEvent(BossEvent.BOSS_ATTACKED, {actor: this.actor, id: this.actor.id});

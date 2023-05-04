@@ -93,4 +93,16 @@ export default class PlayerActor extends AnimatedSprite implements Battler {
     set attackLength(value: number) {
         this.battler.attackLength = value;
     }
+    get isDead(): boolean {
+        return this.battler.isDead;
+    }
+    set isDead(value: boolean) {
+        this.battler.isDead = value;
+    }
+    get playerIsDead(): boolean {
+        return this.battler.playerIsDead;
+    }
+    set playerIsDead(value: boolean) {
+        this.battler.playerIsDead = value;
+    }
 }

@@ -16,7 +16,7 @@ export class PlayerAlive extends GoapState {
     }
 
     public isSatisfied(): boolean {
-        return this.actor.alpha !== .9797;
+        return !this.actor.playerIsDead;
     }
     
 }

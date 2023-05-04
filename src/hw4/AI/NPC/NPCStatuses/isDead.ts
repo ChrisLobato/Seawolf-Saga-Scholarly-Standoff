@@ -15,7 +15,7 @@ export class isDead extends GoapState {
     }
 
     public isSatisfied(): boolean {
-        return this.actor.animation.isPlaying("DEAD");
+        return this.actor.isDead;
     }
     
 }

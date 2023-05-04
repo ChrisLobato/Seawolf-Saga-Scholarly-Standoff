@@ -23,6 +23,9 @@ export default class BasicBattler implements Battler {
     protected _attackWidth: number;
     protected _attackLength: number;
 
+    protected _isDead: boolean;
+    protected _playerIsDead: boolean;
+
     public constructor(owner: Unique & Positioned) {
         this._owner = owner;
         this._targetable = new BasicTargetable(owner);
@@ -70,6 +73,11 @@ export default class BasicBattler implements Battler {
     public set attackWidth(attackWidth: number) { this._attackWidth = attackWidth; }
     public get attackLength(): number { return this._attackLength; }
     public set attackLength(attackLength: number) { this._attackLength = attackLength; }
+
+    public get isDead(): boolean { return this._isDead; }
+    public set isDead(isDead: boolean) { this._isDead = isDead; }
+    public get playerIsDead(): boolean { return this._playerIsDead; }
+    public set playerIsDead(playerIsDead: boolean) { this._playerIsDead = playerIsDead; }
     
     public getTargeting(): TargetingEntity[] { return this._targetable.getTargeting(); }
     public addTargeting(targeting: TargetingEntity): void { this._targetable.addTargeting(targeting); }

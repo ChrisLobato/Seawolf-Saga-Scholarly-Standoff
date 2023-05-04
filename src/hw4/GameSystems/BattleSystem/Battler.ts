@@ -35,6 +35,11 @@ export default interface Battler extends TargetableEntity, Unique {
     get attackLength(): number;
     set attackLength(value: number);
 
+    get isDead(): boolean;
+    set isDead(value: boolean);
+    get playerIsDead(): boolean;
+    set playerIsDead(value: boolean);
+
     /** The battlers inventory of items */
     get inventory(): Inventory;
 

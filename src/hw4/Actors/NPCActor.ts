@@ -93,6 +93,11 @@ export default class NPCActor extends AnimatedSprite implements Battler, Targeti
     public get attackLength(): number { return this.battler.attackLength; }
     public set attackLength(attackLength: number) { this.battler.attackLength = attackLength; }
 
+    public get isDead(): boolean { return this.battler.isDead; }
+    public set isDead(isDead: boolean) { this.battler.isDead = isDead; }
+    public get playerIsDead(): boolean { return this.battler.playerIsDead; }
+    public set playerIsDead(playerIsDead: boolean) { this.battler.playerIsDead = playerIsDead; }
+
     public override setScene(scene: HW4Scene): void { this.scene = scene; }
     public override getScene(): HW4Scene { return this.scene; }
 

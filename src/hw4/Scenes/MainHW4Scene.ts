@@ -377,9 +377,6 @@ export default class MainHW4Scene extends HW4Scene {
     }
 
     protected handleBossAttackTimer(actor: NPCActor): void {
-        //timers are cringe, they change the context of `this`, so I will store the data
-        // then fire an event when the timer ends, and that event will read the stored data
-        // and be able to act under the proper `this` context
         this.bossPasser = actor; 
         this.bossAttackDelayer.start();
     }
@@ -492,16 +489,34 @@ export default class MainHW4Scene extends HW4Scene {
             
             this.player.animation.play("DEAD");
             //marks the player as dead for guardbehavior
-            this.boss.alpha = .9797; //SUPER SCUFFED, REVISIT IMPORTANT TODO
+            // this.boss.alpha = .9797; //SUPER SCUFFED
+            for(let i = 0; i < this.battlers.length; i++){
+                this.battlers[i].playerIsDead = true;
+            }
+
             this.win = false;
             this.sceneEndLoseDelayer.start();
         }
-        else if (id === this.boss.id) {
-            console.log("Boss killed! Ending");
-            this.boss.animation.playIfNotAlready("DEAD");
-            this.win = true;
-            this.sceneEndWinDelayer.start();
-            
+        else {
+            for(let i = 0; i < this.battlers.length; i++){
+                if(id === this.battlers[i].id){
+                    this.battlers[i].isDead = true;
+                }
+            }
+
+            let allBossesDefeated = true;
+            for(let i = 0; i < this.battlers.length; i++){
+                if(!this.battlers[i].isDead && this.battlers[i].id != this.player.id){
+                    allBossesDefeated = false;
+                }
+            }
+            if(allBossesDefeated){
+                this.godMode = true; // prevent any attacks from hurting after the bosses are dead
+                console.log("Boss killed! Ending");
+                this.boss.animation.playIfNotAlready("DEAD");
+                this.win = true;
+                this.sceneEndWinDelayer.start();
+            }
         }
 
         this.idPasser = id;
@@ -619,6 +634,8 @@ export default class MainHW4Scene extends HW4Scene {
         boss.attackLength = attackLength;
         boss.maxHealth = maxHealth;
         boss.battleGroup = 2;
+        boss.playerIsDead = false;
+        boss.isDead = false;
         boss.navkey = "navmesh";
         // Give the NPC a healthbar
         let healthbar = new HealthbarHUD(this, boss, "primary", {size: boss.size.clone().scaled(2, 1/2), offset: boss.size.clone().scaled(0, -1/2)});
