@@ -37,7 +37,7 @@ export default class Attack extends NPCAction {
     }
 
     private attackOver = () => {
-        this.emitter.fireEvent(BossEvent.BOSS_ATTACK_OVER);
+        this.emitter.fireEvent(BossEvent.BOSS_ATTACK_OVER, {actor: this.actor});
         this.isAttacking = false;
         this.actor.animation.playIfNotAlready("DOWN");
         this.finished();

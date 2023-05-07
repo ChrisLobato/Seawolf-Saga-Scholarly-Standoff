@@ -45,9 +45,16 @@ export default class MainHW4Scene extends HW4Scene {
     /** GameSystems in the HW3 Scene */
     private inventoryHud: InventoryHUD;
 
-    /** All the battlers in the HW3Scene (including the player) */
+    /** All the battlers in the Scene (including the player) */
     private battlers: (AnimatedSprite & Battler)[];
-    public player: AnimatedSprite;
+    // only the bosses
+    private bosses: (NPCActor)[];
+    // the boss timers, {id, timer}
+    private bossTimers: ({id: number, timer: Timer})[];
+    // the boss attack markers, {id, attackMarker}
+    private bossMarkers: ({id: number, marker: Graphic})[];
+
+    public player: PlayerActor;
     private boss: AnimatedSprite;
     private idPasser: number;
     
@@ -83,11 +90,18 @@ export default class MainHW4Scene extends HW4Scene {
     private godMode: boolean;
 
     private win: boolean;
+
+    
+    
    
     public constructor(viewport: Viewport, sceneManager: SceneManager, renderingManager: RenderingManager, options: Record<string, any>) {
         super(viewport, sceneManager, renderingManager, options);
 
         this.battlers = new Array<AnimatedSprite & Battler>();
+        this.bosses = new Array<NPCActor>();
+        this.bossTimers = new Array<{id: number, timer: Timer}>();
+        this.bossMarkers = new Array<{id: number, marker: Graphic}>();
+
         this.healthbars = new Map<number, HealthbarHUD>();
 
         this.godMode = false;
@@ -152,11 +166,18 @@ export default class MainHW4Scene extends HW4Scene {
         let bossAttackLength = 25;
         let bossAttackSpeed = 1250;
         let bossAttackDelayDiff = 250;
-        this.initializeBoss(bossSpeed, bossHealth, bossMaxHealth, bossX, bossY, 
+        let id = this.initializeBoss(bossSpeed, bossHealth, bossMaxHealth, bossX, bossY, 
             bossDamage, bossAttackSpeed, bossAttackWidth, bossAttackLength);
-
         // make sure this is never longer than the timer in the attack.ts action file
-        this.bossAttackDelayer = new Timer(bossAttackSpeed-bossAttackDelayDiff, this.handleBossAttack);
+        let tm = new Timer(bossAttackSpeed-bossAttackDelayDiff, this.handleBossAttack);
+        this.bossTimers.push({id: id, timer: tm});
+
+        id = this.initializeBoss(5, bossHealth, bossMaxHealth, bossX, bossY, 
+            bossDamage, bossAttackSpeed, bossAttackWidth, bossAttackLength);
+        tm = new Timer(bossAttackSpeed-bossAttackDelayDiff, this.handleBossAttack);
+        this.bossTimers.push({id: id, timer: tm});
+
+        
 
         // Subscribe to relevant events
         this.receiver.subscribe("healthpack");
@@ -226,7 +247,7 @@ export default class MainHW4Scene extends HW4Scene {
                 break;
             }
             case BossEvent.BOSS_ATTACK_OVER: {
-                this.handleBossAttackOver();
+                this.handleBossAttackOver(event.data.get("actor"));
                 break;
             }
             case PlayerEvent.DODGE_CHANGE: {
@@ -354,10 +375,9 @@ export default class MainHW4Scene extends HW4Scene {
         let right = damageSource.x + halfAttackWidth;
         let top = damageSource.y - halfAttackLength;
         let bottom = damageSource.y + halfAttackLength;
-        for(let i = 0; i < this.battlers.length; i++){
-            let b = this.battlers[i];
-            if(b.id != player.id && // prevents the player from hitting themselves
-                b.position.x - (b.size.x/2) < right &&
+        for(let i = 0; i < this.bosses.length; i++){
+            let b = this.bosses[i];
+            if(b.position.x - (b.size.x/2) < right &&
                 b.position.x + (b.size.x/2)> left &&
                 b.position.y + (b.size.y/2) > top &&
                 b.position.y - (b.size.y/2) < bottom) {
@@ -378,7 +398,11 @@ export default class MainHW4Scene extends HW4Scene {
 
     protected handleBossAttackTimer(actor: NPCActor): void {
         this.bossPasser = actor; 
-        this.bossAttackDelayer.start();
+        for(let i = 0; i < this.bossTimers.length; i++){
+            if(this.bossTimers[i].id === actor.id){
+                this.bossTimers[i].timer.start();
+            }
+        }
     }
 
     protected handleBossAttack = () => {
@@ -396,36 +420,39 @@ export default class MainHW4Scene extends HW4Scene {
         let halfAttackWidth = actor.attackWidth;
         let halfAttackLength = actor.attackLength;
 
-        this.attackMarker2 = <Rect>this.add.graphic(GraphicType.RECT, "primary", { position: damageSource,
-            size: new Vec2(halfAttackWidth*2, halfAttackLength*2)});
-        this.attackMarker2.color = new Color(255, 0, 0, .40);
-        this.attackMarker2.visible = true;
+        for(let i = 0; i < this.bossMarkers.length; i++){
+            if(this.bossMarkers[i].id === actor.id){
+                this.bossMarkers[i].marker.position = damageSource;
+                this.bossMarkers[i].marker.visible = true;
+            }
+        }
 
         let left = damageSource.x - halfAttackWidth;
         let right = damageSource.x + halfAttackWidth;
         let top = damageSource.y - halfAttackLength;
         let bottom = damageSource.y + halfAttackLength;
-        for(let i = 0; i < this.battlers.length; i++){
-            let b = this.battlers[i];
-            if(b.id != actor.id && // prevents the boss from hitting themselves
-                b.position.x - (b.size.x/2) < right &&
-                b.position.x + (b.size.x/2)> left &&
-                b.position.y + (b.size.y/2) > top &&
-                b.position.y - (b.size.y/2) < bottom) { 
-                    if (!this.godMode){
-                        this.dealDamage(b, damage);
-                        //Play attack sound effect
-                        this.emitter.fireEvent(GameEventType.PLAY_SOUND, {key: "veryHeavyAttack", loop: false, holdReference: false});
-                    } else {
-                        console.log("god mode is on, no damage taken");
-                    }
-            }
+        // only the player is hit by attacks
+        let b = this.player;
+        if(b.position.x - (b.size.x/2) < right &&
+            b.position.x + (b.size.x/2)> left &&
+            b.position.y + (b.size.y/2) > top &&
+            b.position.y - (b.size.y/2) < bottom) { 
+                if (!this.godMode){
+                    this.dealDamage(b, damage);
+                    //Play attack sound effect
+                    this.emitter.fireEvent(GameEventType.PLAY_SOUND, {key: "veryHeavyAttack", loop: false, holdReference: false});
+                } else {
+                    console.log("god mode is on, no damage taken");
+                }
         }
-
     }
 
-    protected handleBossAttackOver(): void {
-        this.attackMarker2.visible = false;
+    protected handleBossAttackOver(actor: NPCActor): void {
+        for(let i = 0; i < this.bossMarkers.length; i++){
+            if(this.bossMarkers[i].id === actor.id){
+                this.bossMarkers[i].marker.visible = false;
+            }
+        }
     }
 
     protected dealDamage(battler: AnimatedSprite & Battler, damage: number) {
@@ -489,31 +516,30 @@ export default class MainHW4Scene extends HW4Scene {
             
             this.player.animation.play("DEAD");
             //marks the player as dead for guardbehavior
-            // this.boss.alpha = .9797; //SUPER SCUFFED
-            for(let i = 0; i < this.battlers.length; i++){
-                this.battlers[i].playerIsDead = true;
+            for(let i = 0; i < this.bosses.length; i++){
+                this.bosses[i].playerIsDead = true;
             }
 
             this.win = false;
             this.sceneEndLoseDelayer.start();
         }
         else {
-            for(let i = 0; i < this.battlers.length; i++){
-                if(id === this.battlers[i].id){
-                    this.battlers[i].isDead = true;
+            for(let i = 0; i < this.bosses.length; i++){
+                if(id === this.bosses[i].id){
+                    this.bosses[i].isDead = true;
+                    this.bosses[i].animation.playIfNotAlready("DEAD");
                 }
             }
 
             let allBossesDefeated = true;
-            for(let i = 0; i < this.battlers.length; i++){
-                if(!this.battlers[i].isDead && this.battlers[i].id != this.player.id){
+            for(let i = 0; i < this.bosses.length; i++){
+                if(!this.bosses[i].isDead){
                     allBossesDefeated = false;
                 }
             }
             if(allBossesDefeated){
                 this.godMode = true; // prevent any attacks from hurting after the bosses are dead
-                console.log("Boss killed! Ending");
-                this.boss.animation.playIfNotAlready("DEAD");
+                console.log("All Bosses Killed! Ending");
                 this.win = true;
                 this.sceneEndWinDelayer.start();
             }
@@ -622,7 +648,7 @@ export default class MainHW4Scene extends HW4Scene {
      * Initialize the boss
      */
     protected initializeBoss(speed: number, health: number, maxHealth: number, bossX: number, bossY: number,
-          damage: number, attackSpeed: number, attackWidth: number, attackLength: number): void {
+          damage: number, attackSpeed: number, attackWidth: number, attackLength: number): number {
         let boss = this.add.animatedSprite(NPCActor, "boss", "primary");
         boss.scale.set(1.5, 1.5);
         boss.position.set(bossX, bossY);
@@ -643,10 +669,18 @@ export default class MainHW4Scene extends HW4Scene {
 
         // Give the NPCs their AI
         boss.addAI(GuardBehavior, {target: this.player, range: 100, time: attackSpeed});
-        this.boss = boss;
         // Play the NPCs "IDLE" animation 
         boss.animation.play("DOWN");
-        this.battlers.push(boss);
+        this.battlers.push(boss); 
+        this.bosses.push(boss);
+
+
+        let am = <Rect>this.add.graphic(GraphicType.RECT, "primary", {position: new Vec2(0, 0),
+            size: new Vec2(attackWidth*2, attackLength*2)});
+        am.color = new Color(255, 0, 0, .40);
+        am.visible = false;
+        this.bossMarkers.push({id: boss.id, marker: am});
+        return boss.id;
     }
 
     /**
