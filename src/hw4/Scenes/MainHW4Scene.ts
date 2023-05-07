@@ -49,6 +49,8 @@ export default class MainHW4Scene extends HW4Scene {
     private battlers: (AnimatedSprite & Battler)[];
     // only the bosses
     private bosses: (NPCActor)[];
+    private attackQueue: (NPCActor)[];
+    private attackOverQueue: (NPCActor)[];
     // the boss timers, {id, timer}
     private bossTimers: ({id: number, timer: Timer})[];
     // the boss attack markers, {id, attackMarker}
@@ -99,6 +101,8 @@ export default class MainHW4Scene extends HW4Scene {
 
         this.battlers = new Array<AnimatedSprite & Battler>();
         this.bosses = new Array<NPCActor>();
+        this.attackQueue = new Array<NPCActor>();
+        this.attackOverQueue = new Array<NPCActor>();
         this.bossTimers = new Array<{id: number, timer: Timer}>();
         this.bossMarkers = new Array<{id: number, marker: Graphic}>();
 
@@ -247,7 +251,7 @@ export default class MainHW4Scene extends HW4Scene {
                 break;
             }
             case BossEvent.BOSS_ATTACK_OVER: {
-                this.handleBossAttackOver(event.data.get("actor"));
+                this.handleBossAttackOver();
                 break;
             }
             case PlayerEvent.DODGE_CHANGE: {
@@ -397,7 +401,8 @@ export default class MainHW4Scene extends HW4Scene {
     }
 
     protected handleBossAttackTimer(actor: NPCActor): void {
-        this.bossPasser = actor; 
+        this.attackQueue.unshift(actor); 
+        this.attackOverQueue.unshift(actor);
         for(let i = 0; i < this.bossTimers.length; i++){
             if(this.bossTimers[i].id === actor.id){
                 this.bossTimers[i].timer.start();
@@ -413,7 +418,8 @@ export default class MainHW4Scene extends HW4Scene {
         // You can make it in 4 set directions, as the player's handleAttack does,
         // or you can make it vector straight to the player just as the dodge works (found in PlayerState.ts)
 
-        let actor = this.bossPasser;
+        let actor = this.attackQueue.pop();
+        console.log("in main boss:", actor.id);
         let damage = actor.damage;
         let position = actor.position;
         let damageSource = position;
@@ -447,7 +453,8 @@ export default class MainHW4Scene extends HW4Scene {
         }
     }
 
-    protected handleBossAttackOver(actor: NPCActor): void {
+    protected handleBossAttackOver(): void {
+        let actor = this.attackOverQueue.pop();
         for(let i = 0; i < this.bossMarkers.length; i++){
             if(this.bossMarkers[i].id === actor.id){
                 this.bossMarkers[i].marker.visible = false;
