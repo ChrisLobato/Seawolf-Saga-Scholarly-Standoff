@@ -17,7 +17,6 @@ import SplashScreen from "./hw4/Scenes/SplashScreen";
             {name: PlayerInput.MOVE_DOWN, keys: ["s"]},
             {name: PlayerInput.MOVE_LEFT, keys: ["a"]},
             {name: PlayerInput.MOVE_RIGHT, keys: ["d"]},
-            {name: PlayerInput.PICKUP_ITEM, keys: ["e"]},
             {name: PlayerInput.DROP_ITEM, keys: ["q"]},
             {name: PlayerInput.DODGING, keys: ["space"]},
             {name: PlayerInput.CHEAT_ADVANCE_LEVEL, keys: ["p"]},

@@ -1,12 +1,10 @@
 import PositionGraph from "../../Wolfie2D/DataTypes/Graphs/PositionGraph";
-import Actor from "../../Wolfie2D/DataTypes/Interfaces/Actor";
 import AABB from "../../Wolfie2D/DataTypes/Shapes/AABB";
 import Vec2 from "../../Wolfie2D/DataTypes/Vec2";
 import GameEvent from "../../Wolfie2D/Events/GameEvent";
 import GameNode from "../../Wolfie2D/Nodes/GameNode";
 import Graphic from "../../Wolfie2D/Nodes/Graphic";
 import { GraphicType } from "../../Wolfie2D/Nodes/Graphics/GraphicTypes";
-import Line from "../../Wolfie2D/Nodes/Graphics/Line";
 import Rect from "../../Wolfie2D/Nodes/Graphics/Rect";
 import OrthogonalTilemap from "../../Wolfie2D/Nodes/Tilemaps/OrthogonalTilemap";
 import Navmesh from "../../Wolfie2D/Pathfinding/Navmesh";
@@ -20,7 +18,6 @@ import MathUtils from "../../Wolfie2D/Utils/MathUtils";
 import NPCActor from "../Actors/NPCActor";
 import PlayerActor from "../Actors/PlayerActor";
 import GuardBehavior from "../AI/NPC/NPCBehavior/GaurdBehavior";
-import HealerBehavior from "../AI/NPC/NPCBehavior/HealerBehavior";
 import PlayerAI from "../AI/Player/PlayerAI";
 import PlayerController from "../AI/Player/PlayerController";
 import { ItemEvent, PlayerEvent, BattlerEvent, BossEvent, SceneEvents } from "../Events";
@@ -33,43 +30,46 @@ import Item from "../GameSystems/ItemSystem/Item";
 import Healthpack from "../GameSystems/ItemSystem/Items/Healthpack";
 import LaserGun from "../GameSystems/ItemSystem/Items/LaserGun";
 import { ClosestPositioned } from "../GameSystems/Searching/HW4Reducers";
-import BasicTargetable from "../GameSystems/Targeting/BasicTargetable";
-import Position from "../GameSystems/Targeting/Position";
 import AstarStrategy from "../Pathfinding/AstarStrategy";
 import HW4Scene from "./HW4Scene";
 import Sprite from "../../Wolfie2D/Nodes/Sprites/Sprite";
 import Emitter from "../../Wolfie2D/Events/Emitter";
 import AnimatedSprite from "../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
 import MainMenu from "./MainMenu";
-import Scene2 from "./Scene2";
 import PlayerHealthHUD from "../GameSystems/HUD/PlayerHealthHUD";
 import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
+import BossHealthbarHUD from "../GameSystems/HUD/BossHealthHUD";
+import AttackActor from "../Actors/AttackActor";
 import Scene5 from "./Scene5";
 
-const BattlerGroups = {
-    RED: 1,
-    BLUE: 2
-} as const;
-
-export default class MainHW4Scene extends HW4Scene {
+export default class Scene4 extends HW4Scene {
 
     /** GameSystems in the HW3 Scene */
     private inventoryHud: InventoryHUD;
 
-    /** All the battlers in the HW3Scene (including the player) */
+    /** All the battlers in the Scene (including the player) */
     private battlers: (AnimatedSprite & Battler)[];
-    public player: AnimatedSprite;
+    // only the bosses
+    private bosses: (NPCActor)[];
+    private attackQueue: (NPCActor)[];
+    private attackOverQueue: (NPCActor)[];
+    // the boss timers, {id, timer}
+    private bossTimers: ({id: number, timer: Timer})[];
+    // the boss attack markers, {id, attackMarker}
+    private bossMarkers: ({id: number, marker: Graphic})[];
+
+    public player: PlayerActor;
     private boss: AnimatedSprite;
     private idPasser: number;
     
     /** Healthbars for the battlers */
     private healthbars: Map<number, HealthbarHUD>;
-
+    private bossHealth: BossHealthbarHUD;
 
     private bases: BattlerBase[];
     private HealthIcons: Array<Sprite>;
     private DodgeIcons: Array<Sprite>;
-    private currentDodge = 3;
+    private currentDodge: number;
     private PlayerHealthBar: PlayerHealthHUD;
 
     private healthpacks: Array<Healthpack>;
@@ -89,16 +89,28 @@ export default class MainHW4Scene extends HW4Scene {
     private sceneEndWinDelayer: Timer;
     private sceneEndLoseDelayer: Timer;
     private disappearTimer: Timer;
+    private sceneSkipTimer: Timer;
 
     // Cheat Flags
     private godMode: boolean;
 
     private win: boolean;
+
+    // Attacks
+    private left_fist: AttackActor;
+    private right_fist: AttackActor;
+    
    
     public constructor(viewport: Viewport, sceneManager: SceneManager, renderingManager: RenderingManager, options: Record<string, any>) {
         super(viewport, sceneManager, renderingManager, options);
 
         this.battlers = new Array<AnimatedSprite & Battler>();
+        this.bosses = new Array<NPCActor>();
+        this.attackQueue = new Array<NPCActor>();
+        this.attackOverQueue = new Array<NPCActor>();
+        this.bossTimers = new Array<{id: number, timer: Timer}>();
+        this.bossMarkers = new Array<{id: number, marker: Graphic}>();
+
         this.healthbars = new Map<number, HealthbarHUD>();
 
         this.godMode = false;
@@ -108,28 +120,8 @@ export default class MainHW4Scene extends HW4Scene {
      * @see Scene.update()
      */
     public override loadScene() {
-        // Load the player and enemy spritesheets
-        this.load.spritesheet("player1", "hw4_assets/spritesheets/s4_hero.json");
-
-        // Load in the enemy sprites
-        this.load.spritesheet("boss", "hw4_assets/spritesheets/s4_boss_v2.json");
-
-        // Load the tilemap
+        // should all be saved from previous scene, besides the new tilemap
         this.load.tilemap("level", "hw4_assets/tilemaps/boss_map_2.json");
-
-        this.load.image("healthIcon", "hw4_assets/sprites/WolfieHealth.png");
-        this.load.image("dodgeIcon", "hw4_assets/sprites/DodgeIcon.png");
-
-        // Stop Main Menu Music
-        this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: "mainMenuMusic"});
-
-        // Load audio from the audio folder
-        this.load.audio("heavyAttack", "hw4_assets/sounds/s4_heavy_attack.wav");
-        this.load.audio("lightAttack", "hw4_assets/sounds/s4_light_attack.wav");
-        this.load.audio("playerDamaged", "hw4_assets/sounds/s4_player_damaged.wav");
-        this.load.audio("bossMusic1", "hw4_assets/sounds/s4_boss_music_1.wav");
-        this.load.audio("veryHeavyAttack", "hw4_assets/sounds/s4_very_heavy_attack.wav");
-
     }
     /**
      * @see Scene.startScene
@@ -149,25 +141,21 @@ export default class MainHW4Scene extends HW4Scene {
 
         this.initLayers();
         
-        // Create the player
         this.initializePlayer();
-        // this.initializeItems();
-
         this.initializeNavmesh();
 
-        // Create the boss/es
-        let bossSpeed = 10;
-        let bossHealth = 20;
-        let bossMaxHealth = 20;
-        let bossX = 300;
-        let bossY = 20;
-        let bossDamage = 2;
-        let bossAttackSpeed = 1250;
-        this.initializeBoss(bossSpeed, bossHealth, bossMaxHealth, bossX, bossY, bossDamage, bossAttackSpeed);
+        let bossAttackSpeed = 1750;
+        let bossAttackDelayDiff = 250; 
+        let id = this.initializeBoss(11, 10, 10, 100, 243, 1, bossAttackSpeed, 50, 35, "boss");
+        let tm = new Timer(bossAttackSpeed-bossAttackDelayDiff, this.handleBossAttack);
+        this.bossTimers.push({id: id, timer: tm});
 
-        // make sure this is never longer than the timer in the attack.ts action file
-        this.bossAttackDelayer = new Timer(1000, this.handleBossAttack);
-
+        bossAttackSpeed = 1750;
+        bossAttackDelayDiff = 250; 
+        id = this.initializeBoss(11, 10, 10, 80, 110, 1, bossAttackSpeed, 50, 35, "boss");
+        tm = new Timer(bossAttackSpeed-bossAttackDelayDiff, this.handleBossAttack);
+        this.bossTimers.push({id: id, timer: tm});
+        
         // Subscribe to relevant events
         this.receiver.subscribe("healthpack");
         this.receiver.subscribe("enemyDied");
@@ -190,6 +178,8 @@ export default class MainHW4Scene extends HW4Scene {
         this.sceneEndWinDelayer = new Timer(2000, this.sceneEnderWin);
         this.sceneEndLoseDelayer = new Timer(2000, this.sceneEnderLose);
         this.disappearTimer = new Timer(500, this.disappear);
+        this.sceneSkipTimer = new Timer(100);
+        this.sceneSkipTimer.start();
 
         // Add a UI for health
         this.addUILayer("health");
@@ -210,12 +200,8 @@ export default class MainHW4Scene extends HW4Scene {
             this.handleEvent(this.receiver.getNextEvent());
         }
         this.PlayerHealthBar.update(deltaT);
+        this.bossHealth.update(deltaT);
         this.healthbars.forEach(healthbar => healthbar.update(deltaT));
-
-        // OLD, can be useful to learn from 
-        // this.inventoryHud.update(deltaT);
-        // This is where we could update the player health bar
-        // this.handleHealthChange(player.health,player.maxHealth);
     }
 
     /**
@@ -245,8 +231,8 @@ export default class MainHW4Scene extends HW4Scene {
                 break;
             }
             case PlayerEvent.DODGE_CHANGE: {
-                console.log("HERE");
-                this.handleDodgeChargeChange(event.data.get("curchrg"),event.data.get("maxchrg"));
+                // console.log("HERE");
+                this.handleDodgeChargeChange(event.data.get("curchrg"),event.data.get("maxchrg"), event.data.get("type"));
                 break;
             }
             case PlayerEvent.DODGE_OVER: {
@@ -283,8 +269,11 @@ export default class MainHW4Scene extends HW4Scene {
                 break;
             }
             case PlayerEvent.CHEAT_ADVANCE_LEVEL: {
-                console.log("Cheat activated: advancing level");
-                this.handleSceneEndWin();
+                if(this.sceneSkipTimer.isStopped() && this.sceneSkipTimer.hasRun()){
+                    console.log("Cheat activated: advancing level");
+                    this.win = true;
+                    this.handleSceneEndWin();
+                }
                 break;
             }
             default: {
@@ -293,13 +282,33 @@ export default class MainHW4Scene extends HW4Scene {
         }
     }
 
-    protected handleDodgeChargeChange(currentCharge: number, maxCharge:number): void {
+    protected handleDodgeChargeChange(currentCharge: number, maxCharge: number, type: string): void {
+
+
+        // if increasing LOWER than current
+        if(type === "increase" && currentCharge < this.currentDodge){
+            // console.log("ignored eronous increase");
+            return; // ignore this event
+        }
+        // if decreasing HIGHER than current
+        if(type === "decrease" && currentCharge > this.currentDodge){
+            // console.log("ignored eronous decrease");
+            return; // ignore this event
+        }
+
+        if(currentCharge - this.currentDodge > 1 || currentCharge - this.currentDodge < -1){
+            // console.log("skipping charges");
+            return;
+        }
+        
         for(let i = currentCharge; i < this.DodgeIcons.length; i++ ){
             this.DodgeIcons[i].visible = false;
         }
         for(let i = 0; i < currentCharge && i<this.DodgeIcons.length;i++){
             this.DodgeIcons[i].visible = true;
         }
+        this.currentDodge = currentCharge;
+
 
     }
     
@@ -310,8 +319,8 @@ export default class MainHW4Scene extends HW4Scene {
 
     protected handleAttack(player: PlayerActor, controller: PlayerController, type: string): void {
         // console.log('attack in main at', player.position.toString(), 'facing', controller.faceDir.toString());
-        console.log("handle attack called");
-
+        // console.log("handle attack called");
+        
         // REVISIT random values for testing
         let halfAttackWidth = 0;
         let halfAttackLength = 0;
@@ -350,13 +359,45 @@ export default class MainHW4Scene extends HW4Scene {
         if(type === "light") {
             this.attackMarker = <Rect>this.add.graphic(GraphicType.RECT, "primary", { position: damageSource, 
                 size: new Vec2(halfAttackWidth*2, halfAttackLength*2)});
-            this.attackMarker.color = new Color(255, 0, 255, .20);
+            this.attackMarker.color = new Color(255, 0, 255, 0);
+            //Set the left fist to the correct position
+            this.left_fist.position.set(damageSource.x, damageSource.y);
+            //Play the fist animation based on the direction the player is facing
+            if(controller.rotation === 0) {
+                this.left_fist.animation.play("UP", false);
+            }
+            else if(controller.rotation === Math.PI ){
+                this.left_fist.animation.play("DOWN", false);
+            }
+            else if(controller.rotation === Math.PI/2 ){
+                this.left_fist.animation.play("LEFT", false);
+            }
+            else {
+                this.left_fist.animation.play("RIGHT", false);
+            }
+            this.left_fist.visible = true;
             damage = 1.25; // 00001 to avoid rounding down error
         }
         else if(type === "heavy") {
             this.attackMarker = <Rect>this.add.graphic(GraphicType.RECT, "primary", { position: damageSource,
                 size: new Vec2(halfAttackWidth*2, halfAttackLength*2)});
-            this.attackMarker.color = new Color(255, 255, 0, .20);
+            this.attackMarker.color = new Color(255, 255, 0, 0);
+            //Set the right fist to the correct position
+            this.right_fist.position.set(damageSource.x, damageSource.y);
+            //Play the fist animation based on the direction the player is facing
+            if(controller.rotation === 0) {
+                this.right_fist.animation.play("UP", false);
+            }
+            else if(controller.rotation === Math.PI ){
+                this.right_fist.animation.play("DOWN", false);
+            }
+            else if(controller.rotation === Math.PI/2 ){
+                this.right_fist.animation.play("LEFT", false);
+            }
+            else {
+                this.right_fist.animation.play("RIGHT", false);
+            }
+            this.right_fist.visible = true;
             damage = 2; // 00001 to avoid rounding down error
         }
         
@@ -369,10 +410,9 @@ export default class MainHW4Scene extends HW4Scene {
         let right = damageSource.x + halfAttackWidth;
         let top = damageSource.y - halfAttackLength;
         let bottom = damageSource.y + halfAttackLength;
-        for(let i = 0; i < this.battlers.length; i++){
-            let b = this.battlers[i];
-            if(b.id != player.id && // prevents the player from hitting themselves
-                b.position.x - (b.size.x/2) < right &&
+        for(let i = 0; i < this.bosses.length; i++){
+            let b = this.bosses[i];
+            if(b.position.x - (b.size.x/2) < right &&
                 b.position.x + (b.size.x/2)> left &&
                 b.position.y + (b.size.y/2) > top &&
                 b.position.y - (b.size.y/2) < bottom) {
@@ -389,62 +429,77 @@ export default class MainHW4Scene extends HW4Scene {
 
     protected handleAttackOver(): void {
         this.attackMarker.visible = false;
+        this.left_fist.visible = false;
+        this.right_fist.visible = false;
     }
 
     protected handleBossAttackTimer(actor: NPCActor): void {
-        //timers are cringe, they change the context of `this`, so I will store the data
-        // then fire an event when the timer ends, and that event will read the stored data
-        // and be able to act under the proper `this` context
-        this.bossPasser = actor; 
-        this.bossAttackDelayer.start();
+        this.attackQueue.unshift(actor); 
+        this.attackOverQueue.unshift(actor);
+        for(let i = 0; i < this.bossTimers.length; i++){
+            if(this.bossTimers[i].id === actor.id){
+                this.bossTimers[i].timer.start();
+            }
+        }
     }
 
     protected handleBossAttack = () => {
         // can pass in the player from target in guardbehavior
-        let actor = this.bossPasser;
-        let pseudoDamage = actor.battleGroup;
+
+        // IMPORTANT you already have the boss, and the player is globally located via this.player ,
+        // so it is quite easy to get the attack to be in the direction of the player.
+        // You can make it in 4 set directions, as the player's handleAttack does,
+        // or you can make it vector straight to the player just as the dodge works (found in PlayerState.ts)
+
+        let actor = this.attackQueue.pop();
+        console.log("in main boss:", actor.id);
+        let damage = actor.damage;
         let position = actor.position;
         let damageSource = position;
-        let halfAttackWidth = 50;
-        let halfAttackLength = 25;
+        let halfAttackWidth = actor.attackWidth;
+        let halfAttackLength = actor.attackLength;
 
-        this.attackMarker2 = <Rect>this.add.graphic(GraphicType.RECT, "primary", { position: damageSource,
-            size: new Vec2(halfAttackWidth*2, halfAttackLength*2)});
-        this.attackMarker2.color = new Color(255, 0, 0, .40);
-        this.attackMarker2.visible = true;
+        for(let i = 0; i < this.bossMarkers.length; i++){
+            if(this.bossMarkers[i].id === actor.id){
+                this.bossMarkers[i].marker.position = damageSource;
+                this.bossMarkers[i].marker.visible = true;
+            }
+        }
 
         let left = damageSource.x - halfAttackWidth;
         let right = damageSource.x + halfAttackWidth;
         let top = damageSource.y - halfAttackLength;
         let bottom = damageSource.y + halfAttackLength;
-        for(let i = 0; i < this.battlers.length; i++){
-            let b = this.battlers[i];
-            if(b.id != actor.id && // prevents the boss from hitting themselves
-                b.position.x - (b.size.x/2) < right &&
-                b.position.x + (b.size.x/2)> left &&
-                b.position.y + (b.size.y/2) > top &&
-                b.position.y - (b.size.y/2) < bottom) { 
-                    if (!this.godMode){
-                        this.dealDamage(b, pseudoDamage);
-                        //Play attack sound effect
-                        this.emitter.fireEvent(GameEventType.PLAY_SOUND, {key: "veryHeavyAttack", loop: false, holdReference: false});
-                    } else {
-                        console.log("god mode is on, no damage taken");
-                    }
-            }
+        // only the player is hit by attacks
+        let b = this.player;
+        if(b.position.x - (b.size.x/2) < right &&
+            b.position.x + (b.size.x/2)> left &&
+            b.position.y + (b.size.y/2) > top &&
+            b.position.y - (b.size.y/2) < bottom) { 
+                if (!this.godMode){
+                    this.dealDamage(b, damage);
+                    //Play attack sound effect
+                    this.emitter.fireEvent(GameEventType.PLAY_SOUND, {key: "veryHeavyAttack", loop: false, holdReference: false});
+                } else {
+                    console.log("god mode is on, no damage taken");
+                }
         }
-
     }
 
     protected handleBossAttackOver(): void {
-        this.attackMarker2.visible = false;
+        let actor = this.attackOverQueue.pop();
+        for(let i = 0; i < this.bossMarkers.length; i++){
+            if(this.bossMarkers[i].id === actor.id){
+                this.bossMarkers[i].marker.visible = false;
+            }
+        }
     }
 
     protected dealDamage(battler: AnimatedSprite & Battler, damage: number) {
-        console.log("battler health before:", battler.health);
-        console.log("this battler took damage:", battler.id);
+        // console.log("this battler took damage:", battler.id);
+        // console.log("battler health before:", battler.health);
         battler.health-= damage;
-        console.log("battler health after:", battler.health);
+        // console.log("battler health after:", battler.health);
 
     }
 
@@ -500,30 +555,46 @@ export default class MainHW4Scene extends HW4Scene {
             console.log("player killed! Ending");
             
             this.player.animation.play("DEAD");
-            console.log("played death animation");
             //marks the player as dead for guardbehavior
-            this.boss.alpha = .9797; //SUPER SCUFFED, REVISIT IMPORTANT TODO
+            for(let i = 0; i < this.bosses.length; i++){
+                this.bosses[i].playerIsDead = true;
+            }
+
             this.win = false;
             this.sceneEndLoseDelayer.start();
         }
-        else if (id === this.boss.id) {
-            console.log("Boss killed! Ending");
-            this.boss.animation.playIfNotAlready("DEAD");
-            this.win = true;
-            this.sceneEndWinDelayer.start();
-            
+        else {
+            for(let i = 0; i < this.bosses.length; i++){
+                if(id === this.bosses[i].id){
+                    this.bosses[i].isDead = true;
+                    this.bosses[i].animation.playIfNotAlready("DEAD");
+                }
+            }
+
+            let allBossesDefeated = true;
+            for(let i = 0; i < this.bosses.length; i++){
+                if(!this.bosses[i].isDead){
+                    allBossesDefeated = false;
+                }
+            }
+            if(allBossesDefeated){
+                this.godMode = true; // prevent any attacks from hurting after the bosses are dead
+                console.log("All Bosses Killed! Ending");
+                this.win = true;
+                this.sceneEndWinDelayer.start();
+            }
         }
 
         this.idPasser = id;
-        console.log("starting disappear timer");
+        // console.log("starting disappear timer");
         this.disappearTimer.start();   
     }
 
     protected disappear = () =>  {
-        console.log("in disappear");
+        // console.log("in disappear");
         let id = this.idPasser;
         let battler = this.battlers.find(b => b.id === id);
-        console.log("the passed ID", id);
+        // console.log("the passed ID", id);
 
         if (battler) {
             battler.battlerActive = false;
@@ -550,16 +621,44 @@ export default class MainHW4Scene extends HW4Scene {
         //Scale the player sprite to be 1.5x the size of the tile
         player.scale.set(1.5, 1.5);
 
+        // Initialize left fist as an animatedSprite
+        let left_fist = this.add.animatedSprite(AttackActor, "left_fist", "primary");
+        left_fist.position.set(0, 0);
+        left_fist.visible = false;
+        left_fist.scale.set(1, 1);
+        left_fist.tweens.add("LEFT", {
+            startDelay: 0,
+            duration: 100,
+            effects: [
+                {
+                    property: "positionX",
+                    start: 0,
+                    end: -10,
+                }
+            ],
+        });
+        this.left_fist = left_fist;
+
+        //Initialize right fist
+        let right_fist = this.add.animatedSprite(AttackActor, "right_fist", "primary");
+        right_fist.position.set(0, 0);
+        right_fist.visible = false;
+        right_fist.scale.set(2.2, 2.2);
+        right_fist.tweens.add("RIGHT", {
+            startDelay: 0,
+            duration: 100,
+            effects: [
+                {
+                    property: "positionX",
+                    start: 0,
+                    end: 10,
+                }
+            ],
+        });
+        this.right_fist = right_fist;
+
         player.health = 4;
         player.maxHealth = 4;
-
-        //  player.inventory.onChange = ItemEvent.INVENTORY_CHANGED
-        //  this.inventoryHud = new InventoryHUD(this, player.inventory, "inventorySlot", {
-        //      start: new Vec2(232, 24),
-        //      slotLayer: "slots",
-        //      padding: 8,
-        //      itemLayer: "items"
-        //  });
 
         // Give the player physics
         player.addPhysics(new AABB(Vec2.ZERO, new Vec2(8, 8)));
@@ -589,7 +688,7 @@ export default class MainHW4Scene extends HW4Scene {
         this.HealthIcons[3].positionY = 0 +30;
 
         //Creates a Wolfie Sprite healthbar
-        let playerHealthbar = new PlayerHealthHUD(this,player,"primary",this.HealthIcons);
+        let playerHealthbar = new PlayerHealthHUD(this,player,"slots",this.HealthIcons);
         this.PlayerHealthBar = playerHealthbar;
 
         this.DodgeIcons = new Array(4);
@@ -597,6 +696,10 @@ export default class MainHW4Scene extends HW4Scene {
         this.DodgeIcons[1] = this.add.sprite("dodgeIcon","health2");
         this.DodgeIcons[2] = this.add.sprite("dodgeIcon","health2");
         this.DodgeIcons[3] = this.add.sprite("dodgeIcon","health2");
+        this.DodgeIcons[0].visible = true;
+        this.DodgeIcons[1].visible = true;
+        this.DodgeIcons[2].visible = true;
+        this.DodgeIcons[3].visible = true;
         this.DodgeIcons[0].scale.set(.25,.25);
         this.DodgeIcons[1].scale.set(.25,.25);
         this.DodgeIcons[2].scale.set(.25,.25);
@@ -624,27 +727,44 @@ export default class MainHW4Scene extends HW4Scene {
     /**
      * Initialize the boss
      */
-    protected initializeBoss(speed: number, health: number, maxHealth: number,
-         bossX: number, bossY: number, damage: number, attackSpeed: number): void {
-        let boss = this.add.animatedSprite(NPCActor, "boss", "primary");
+    protected initializeBoss(speed: number, health: number, maxHealth: number, bossX: number, bossY: number,
+          damage: number, attackSpeed: number, attackWidth: number, attackLength: number, type: string): number {
+        let boss = this.add.animatedSprite(NPCActor, type, "primary");
+        console.log("type in initialize boss:", type);
+        boss.visible= true;
         boss.scale.set(1.5, 1.5);
         boss.position.set(bossX, bossY);
         boss.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
-        boss.battleGroup = damage; //stores the damage value in the battleGroup field
+        boss.damage = damage; //stores the damage value in the battleGroup field
         boss.speed = speed;
         boss.health = health;
+        boss.attackWidth = attackWidth;
+        boss.attackLength = attackLength;
         boss.maxHealth = maxHealth;
+        boss.battleGroup = 2;
+        boss.playerIsDead = false;
+        boss.isDead = false;
         boss.navkey = "navmesh";
         // Give the NPC a healthbar
         let healthbar = new HealthbarHUD(this, boss, "primary", {size: boss.size.clone().scaled(2, 1/2), offset: boss.size.clone().scaled(0, -1/2)});
+        let BossHealthBar = new BossHealthbarHUD(this,boss, "primary", {size: boss.size.clone().scaled(2, 1/2), offset: boss.size.clone().scaled(0, -1/2)});
+        this.bossHealth = BossHealthBar;
         this.healthbars.set(boss.id, healthbar);
 
         // Give the NPCs their AI
         boss.addAI(GuardBehavior, {target: this.player, range: 100, time: attackSpeed});
-        this.boss = boss;
         // Play the NPCs "IDLE" animation 
         boss.animation.play("DOWN");
-        this.battlers.push(boss);
+        this.battlers.push(boss); 
+        this.bosses.push(boss);
+
+
+        let am = <Rect>this.add.graphic(GraphicType.RECT, "primary", {position: new Vec2(0, 0),
+            size: new Vec2(attackWidth*2, attackLength*2)});
+        am.color = new Color(255, 0, 0, .40);
+        am.visible = false;
+        this.bossMarkers.push({id: boss.id, marker: am});
+        return boss.id;
     }
 
     /**
@@ -776,6 +896,8 @@ export default class MainHW4Scene extends HW4Scene {
             
             this.load.keepSpritesheet("player1");
             this.load.keepSpritesheet("boss");
+            this.load.keepSpritesheet("bossFast");
+            this.load.keepSpritesheet("bossHeavy");
 
             this.load.keepAudio("heavyAttack");
             this.load.keepAudio("lightAttack");

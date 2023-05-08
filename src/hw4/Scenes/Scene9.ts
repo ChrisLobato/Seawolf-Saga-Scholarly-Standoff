@@ -40,9 +40,9 @@ import PlayerHealthHUD from "../GameSystems/HUD/PlayerHealthHUD";
 import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
 import BossHealthbarHUD from "../GameSystems/HUD/BossHealthHUD";
 import AttackActor from "../Actors/AttackActor";
-import Scene3 from "./Scene3";
+import Scene10 from "./Scene10";
 
-export default class Scene2 extends HW4Scene {
+export default class Scene9 extends HW4Scene {
 
     /** GameSystems in the HW3 Scene */
     private inventoryHud: InventoryHUD;
@@ -122,6 +122,7 @@ export default class Scene2 extends HW4Scene {
     public override loadScene() {
         // should all be saved from previous scene
     }
+
     /**
      * @see Scene.startScene
      */
@@ -145,10 +146,21 @@ export default class Scene2 extends HW4Scene {
 
         let bossAttackSpeed = 1250;
         let bossAttackDelayDiff = 200;
-        let id = this.initializeBoss(16, 10, 10, 300, 200, 1, bossAttackSpeed, 40, 28, "bossFast");
+        let id = this.initializeBoss(16, 10, 10, 200, 100, 1, bossAttackSpeed, 40, 28, "bossFast");
         let tm = new Timer(bossAttackSpeed-bossAttackDelayDiff, this.handleBossAttack);
         this.bossTimers.push({id: id, timer: tm});
-        
+
+        bossAttackSpeed = 1250;
+        bossAttackDelayDiff = 200;
+        id = this.initializeBoss(16, 10, 10, 200, 200, 1, bossAttackSpeed, 40, 28, "bossFast");
+        tm = new Timer(bossAttackSpeed-bossAttackDelayDiff, this.handleBossAttack);
+        this.bossTimers.push({id: id, timer: tm});
+
+        bossAttackSpeed = 1250;
+        bossAttackDelayDiff = 200;
+        id = this.initializeBoss(16, 10, 10, 200, 300, 1, bossAttackSpeed, 40, 28, "bossFast");
+        tm = new Timer(bossAttackSpeed-bossAttackDelayDiff, this.handleBossAttack);
+        this.bossTimers.push({id: id, timer: tm});
         
         // Subscribe to relevant events
         this.receiver.subscribe("healthpack");
@@ -515,7 +527,7 @@ export default class Scene2 extends HW4Scene {
         this.viewport.setFocus(size);
         this.viewport.setZoomLevel(1);
         this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: "bossMusic1"});
-        this.sceneManager.changeToScene(Scene3);
+        this.sceneManager.changeToScene(Scene10);
     }
     protected handleSceneEndLose (): void {
         // recentering the viewport
@@ -610,7 +622,7 @@ export default class Scene2 extends HW4Scene {
      */
     protected initializePlayer(): void {
         let player = this.add.animatedSprite(PlayerActor, "player1", "primary");
-        player.position.set(40, 40);
+        player.position.set(100, 50);
         player.battleGroup = 2;
         //Scale the player sprite to be 1.5x the size of the tile
         player.scale.set(1.5, 1.5);
@@ -899,7 +911,7 @@ export default class Scene2 extends HW4Scene {
             this.load.keepAudio("bossMusic1");
             this.load.keepAudio("veryHeavyAttack");
 
-            this.load.keepTilemap("level");
+             this.load.keepTilemap("level");
         }
         else {
             console.log("not keeping anything, resetting to home screen");

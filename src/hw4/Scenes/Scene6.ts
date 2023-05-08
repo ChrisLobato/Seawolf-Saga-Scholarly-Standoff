@@ -40,9 +40,9 @@ import PlayerHealthHUD from "../GameSystems/HUD/PlayerHealthHUD";
 import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
 import BossHealthbarHUD from "../GameSystems/HUD/BossHealthHUD";
 import AttackActor from "../Actors/AttackActor";
-import Scene3 from "./Scene3";
+import Scene7 from "./Scene7";
 
-export default class Scene2 extends HW4Scene {
+export default class Scene6 extends HW4Scene {
 
     /** GameSystems in the HW3 Scene */
     private inventoryHud: InventoryHUD;
@@ -120,7 +120,7 @@ export default class Scene2 extends HW4Scene {
      * @see Scene.update()
      */
     public override loadScene() {
-        // should all be saved from previous scene
+        // should all be saved from previous scene, besides the new tilemap
     }
     /**
      * @see Scene.startScene
@@ -143,12 +143,17 @@ export default class Scene2 extends HW4Scene {
         this.initializePlayer();
         this.initializeNavmesh();
 
-        let bossAttackSpeed = 1250;
-        let bossAttackDelayDiff = 200;
-        let id = this.initializeBoss(16, 10, 10, 300, 200, 1, bossAttackSpeed, 40, 28, "bossFast");
+        let bossAttackSpeed = 2250;
+        let bossAttackDelayDiff = 300;
+        let id = this.initializeBoss(11, 10, 10, 100, 240, 1, bossAttackSpeed, 75, 50, "bossHeavy");
         let tm = new Timer(bossAttackSpeed-bossAttackDelayDiff, this.handleBossAttack);
         this.bossTimers.push({id: id, timer: tm});
-        
+
+        bossAttackSpeed = 1250;
+        bossAttackDelayDiff = 200;
+        id = this.initializeBoss(16, 10, 10, 90, 450, 1, bossAttackSpeed,40, 28, "bossFast");
+        tm = new Timer(bossAttackSpeed-bossAttackDelayDiff, this.handleBossAttack);
+        this.bossTimers.push({id: id, timer: tm});
         
         // Subscribe to relevant events
         this.receiver.subscribe("healthpack");
@@ -515,7 +520,7 @@ export default class Scene2 extends HW4Scene {
         this.viewport.setFocus(size);
         this.viewport.setZoomLevel(1);
         this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: "bossMusic1"});
-        this.sceneManager.changeToScene(Scene3);
+        this.sceneManager.changeToScene(Scene7);
     }
     protected handleSceneEndLose (): void {
         // recentering the viewport
