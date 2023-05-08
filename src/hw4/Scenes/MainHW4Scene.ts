@@ -20,7 +20,7 @@ import PlayerActor from "../Actors/PlayerActor";
 import GuardBehavior from "../AI/NPC/NPCBehavior/GaurdBehavior";
 import PlayerAI from "../AI/Player/PlayerAI";
 import PlayerController from "../AI/Player/PlayerController";
-import { ItemEvent, PlayerEvent, BattlerEvent, BossEvent, SceneEvents } from "../Events";
+import { ItemEvent, PlayerEvent, BattlerEvent, BossEvent, SceneEvents, HudEvent } from "../Events";
 import Battler from "../GameSystems/BattleSystem/Battler";
 import BattlerBase from "../GameSystems/BattleSystem/BattlerBase";
 import HealthbarHUD from "../GameSystems/HUD/HealthbarHUD";
@@ -202,6 +202,7 @@ export default class MainHW4Scene extends HW4Scene {
         // Cheat Events
         this.receiver.subscribe(PlayerEvent.CHEAT_GOD_MODE);
         this.receiver.subscribe(PlayerEvent.CHEAT_ADVANCE_LEVEL);
+        this.receiver.subscribe(HudEvent.PAUSE_MENU_START);
 
         this.sceneEndWinDelayer = new Timer(2000, this.sceneEnderWin);
         this.sceneEndLoseDelayer = new Timer(2000, this.sceneEnderLose);
@@ -299,6 +300,11 @@ export default class MainHW4Scene extends HW4Scene {
                 this.handleSceneEndWin();
                 break;
             }
+
+            case HudEvent.PAUSE_MENU_START:{
+                this.handlePauseMenu();
+                break;
+            }
             default: {
                 throw new Error(`Unhandled event type "${event.type}" caught in SeawolfSaga event handler`);
             }
@@ -317,6 +323,10 @@ export default class MainHW4Scene extends HW4Scene {
     
     protected handleDodgeOver(): void {
         //REVISIT
+    }
+    protected handlePauseMenu(): void {
+        //This will handle loading and bringing up the pause menu
+        console.log("Pause menu triggered");
     }
 
 

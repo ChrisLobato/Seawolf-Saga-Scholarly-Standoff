@@ -18,7 +18,8 @@ export enum PlayerInput {
     PICKUP_ITEM = "PICKUP_ITEM",
     DROP_ITEM = "DROP_ITEM",
     CHEAT_ADVANCE_LEVEL = "CHEAT_ADVANCE_LEVEL",
-    CHEAT_GOD_MODE = "CHEAT_GOD_MODE"
+    CHEAT_GOD_MODE = "CHEAT_GOD_MODE",
+    PAUSE_MENU = "PAUSE_MENU",
 }
 
 /**
@@ -128,4 +129,5 @@ export default class PlayerController {
 
     public get dodging(): boolean { return Input.isJustPressed(PlayerInput.DODGING) && !this.owner.animation.isPlaying("DEAD"); }
 
+    public get pausing(): boolean { return Input.isPressed(PlayerInput.PAUSE_MENU);}
 }
