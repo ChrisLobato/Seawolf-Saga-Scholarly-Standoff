@@ -119,7 +119,7 @@ export default class MainHW4Scene extends HW4Scene {
         this.load.spritesheet("boss", "hw4_assets/spritesheets/s4_boss_v2.json");
 
         // Load the tilemap
-        this.load.tilemap("level", "hw4_assets/tilemaps/boss_map_1.json");
+        this.load.tilemap("level", "hw4_assets/tilemaps/boss_map_3.json");
 
         // Load the enemy locations
         this.load.object("red", "hw4_assets/data/enemies/red.json");
@@ -603,7 +603,7 @@ export default class MainHW4Scene extends HW4Scene {
      */
     protected initializePlayer(): void {
         let player = this.add.animatedSprite(PlayerActor, "player1", "primary");
-        player.position.set(40, 40);
+        player.position.set(100, 100);
         player.battleGroup = 2;
         //Scale the player sprite to be 1.5x the size of the tile
         player.scale.set(1.5, 1.5);

@@ -44,3 +44,8 @@ export enum SceneEvents {
     END_SCENE_0 = "END_SCENE_0",
     END_SCENE_1 = "END_SCENE_1"
 }
+
+export enum CarEvent {
+    PLAYER_CAR_COLLISION = "PLAYER_CAR_COLLISION",
+    OUT_OF_BOUNDS = "OUT_OF_BOUNDS"
+}

@@ -159,8 +159,8 @@ export default class MainHW4Scene extends HW4Scene {
         let bossSpeed = 20;
         let bossHealth = 10;
         let bossMaxHealth = 10;
-        let bossX = 200;
-        let bossY = 200;
+        let bossX = 300;
+        let bossY = 20;
         let bossDamage = 1;
         let bossAttackSpeed = 700;
         this.initializeBoss(bossSpeed, bossHealth, bossMaxHealth, bossX, bossY, bossDamage, bossAttackSpeed);
