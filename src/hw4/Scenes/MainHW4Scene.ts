@@ -40,6 +40,9 @@ import Scene2 from "./Scene2";
 import PlayerHealthHUD from "../GameSystems/HUD/PlayerHealthHUD";
 import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
 import BossHealthbarHUD from "../GameSystems/HUD/BossHealthHUD";
+import Label from "../../Wolfie2D/Nodes/UIElements/Label";
+import { UIElementType } from "../../Wolfie2D/Nodes/UIElements/UIElementTypes";
+import Button from "../../Wolfie2D/Nodes/UIElements/Button";
 
 export default class MainHW4Scene extends HW4Scene {
 
@@ -82,6 +85,9 @@ export default class MainHW4Scene extends HW4Scene {
 
     // Graphics for Pause Menu
     protected pauseScreen: Rect;
+    protected pauseLabel: Label;
+    protected pauseButton: Button;
+    protected resumeButton: Button;
 
     private attackMarker: Graphic;
     private attackMarker2: Graphic;
@@ -159,10 +165,31 @@ export default class MainHW4Scene extends HW4Scene {
         this.viewport.setZoomLevel(3);
 
         this.initLayers();
-        this.pauseScreen = <Rect>this.add.graphic(GraphicType.RECT, "primary", { position: new Vec2(2000, 2000), size: new Vec2(4000, 4000) });
+        //init the pause Menu Shtuff REVISIT To move maybe into a function in HW4Scene.ts so everything inherits it
+        this.pauseScreen = <Rect>this.add.graphic(GraphicType.RECT, "primary", { position: new Vec2(this.viewport.getCenter().x, this.viewport.getCenter().y), size: new Vec2(4000, 4000) });
         this.pauseScreen.setColor(Color.BLACK);
         this.pauseScreen.alpha = 0;
         this.pauseScreen.visible = false;
+        this.pauseLabel = <Label>this.add.uiElement(UIElementType.LABEL,"primary", {position: new Vec2(this.getViewport().getCenter().x, this.getViewport().getCenter().y),text: "GAME PAUSED"});
+        this.pauseLabel.size.set(300,30);
+        this.pauseLabel.fontSize = 30;
+        this.pauseLabel.font = "Courier";
+        this.pauseLabel.setTextColor(Color.WHITE);
+        this.pauseLabel.visible = false;
+        this.pauseButton = <Button>this.add.uiElement(UIElementType.BUTTON,"primary",{position: new Vec2(this.getViewport().getCenter().x, this.getViewport().getCenter().y), text: "Main Menu"})
+        this.pauseButton.size.set(200,100);
+        this.pauseButton.borderWidth = 2;
+        this.pauseButton.borderColor = Color.WHITE;
+        this.pauseButton.backgroundColor =Color.TRANSPARENT;
+        this.pauseButton.onClickEventId = "Main Menu";
+        this.pauseButton.visible = false;
+        this.resumeButton = <Button>this.add.uiElement(UIElementType.BUTTON,"primary",{position: new Vec2(this.getViewport().getCenter().x, this.getViewport().getCenter().y), text: "Resume"})
+        this.resumeButton.size.set(200,100);
+        this.resumeButton.borderWidth = 2;
+        this.resumeButton.borderColor = Color.WHITE;
+        this.resumeButton.backgroundColor =Color.TRANSPARENT;
+        this.resumeButton.onClickEventId = HudEvent.PAUSE_MENU_START;
+        this.resumeButton.visible = false;
 
         this.initializePlayer();
         this.initializeNavmesh();
@@ -210,6 +237,7 @@ export default class MainHW4Scene extends HW4Scene {
         this.receiver.subscribe(PlayerEvent.CHEAT_GOD_MODE);
         this.receiver.subscribe(PlayerEvent.CHEAT_ADVANCE_LEVEL);
         this.receiver.subscribe(HudEvent.PAUSE_MENU_START);
+        this.receiver.subscribe("Main Menu"); //this is what we want to listen for when we go back to main menu
 
         this.sceneEndWinDelayer = new Timer(2000, this.sceneEnderWin);
         this.sceneEndLoseDelayer = new Timer(2000, this.sceneEnderLose);
@@ -312,6 +340,10 @@ export default class MainHW4Scene extends HW4Scene {
                 this.handlePauseMenu();
                 break;
             }
+            case "Main Menu":{
+                console.log("About to handle Main Menu");
+                break;
+            }
             default: {
                 throw new Error(`Unhandled event type "${event.type}" caught in SeawolfSaga event handler`);
             }
@@ -343,8 +375,20 @@ export default class MainHW4Scene extends HW4Scene {
             let primaryLayer = this.getLayer("primary");
             this.pauseScreen.visible = true;
             this.pauseScreen.alpha = 0.4;
+            this.pauseLabel.positionX = this.getViewport().getCenter().x;
+            this.pauseLabel.positionY = this.getViewport().getCenter().y
+            this.pauseLabel.visible = true;
+            this.pauseButton.positionX = this.getViewport().getCenter().x;
+            this.pauseButton.positionY = this.getViewport().getCenter().y+100;
+            this.resumeButton.positionX = this.getViewport().getCenter().x;
+            this.resumeButton.positionY = this.getViewport().getCenter().y+50;
+            //this.resumeButton.set 
+            this.pauseButton.visible = true;
+            this.resumeButton.visible = true;
             //primaryLayer.disable(); might not need to disable because we are going to freeze everything
             this.player.freeze();
+            this.player.aiActive = false;   //disables player click attack so we can click buttons
+
             for(let i = 0; i < this.battlers.length; i++){
                 this.battlers[i].freeze();
                 //this.battlers[i].battlerActive = false; // REVISIT right now its deactivating the battlers
@@ -359,7 +403,11 @@ export default class MainHW4Scene extends HW4Scene {
             //primaryLayer.enable();
             this.pauseScreen.visible = false;
             this.pauseScreen.alpha = 0;
+            this.pauseLabel.visible = false;
+            this.pauseButton.visible = false;
+            this.resumeButton.visible = false;
             this.player.unfreeze();
+            this.player.aiActive = true;
             for(let i = 0;i < this.battlers.length;i++){
                 if(this.battlers[i] !== this.player){}
                 this.battlers[i].unfreeze();    //if enemies are added to battlers list then this should catch them all
