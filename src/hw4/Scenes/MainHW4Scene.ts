@@ -39,6 +39,7 @@ import MainMenu from "./MainMenu";
 import Scene2 from "./Scene2";
 import PlayerHealthHUD from "../GameSystems/HUD/PlayerHealthHUD";
 import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
+import BossHealthbarHUD from "../GameSystems/HUD/BossHealthHUD";
 
 export default class MainHW4Scene extends HW4Scene {
 
@@ -62,7 +63,7 @@ export default class MainHW4Scene extends HW4Scene {
     
     /** Healthbars for the battlers */
     private healthbars: Map<number, HealthbarHUD>;
-
+    private bossHealth: BossHealthbarHUD;
 
     private bases: BattlerBase[];
     private HealthIcons: Array<Sprite>;
@@ -225,6 +226,7 @@ export default class MainHW4Scene extends HW4Scene {
             this.handleEvent(this.receiver.getNextEvent());
         }
         this.PlayerHealthBar.update(deltaT);
+        this.bossHealth.update(deltaT);
         this.healthbars.forEach(healthbar => healthbar.update(deltaT));
     }
 
@@ -677,6 +679,8 @@ export default class MainHW4Scene extends HW4Scene {
         boss.navkey = "navmesh";
         // Give the NPC a healthbar
         let healthbar = new HealthbarHUD(this, boss, "primary", {size: boss.size.clone().scaled(2, 1/2), offset: boss.size.clone().scaled(0, -1/2)});
+        let BossHealthBar = new BossHealthbarHUD(this,boss, "primary", {size: boss.size.clone().scaled(2, 1/2), offset: boss.size.clone().scaled(0, -1/2)});
+        this.bossHealth = BossHealthBar;
         this.healthbars.set(boss.id, healthbar);
 
         // Give the NPCs their AI
