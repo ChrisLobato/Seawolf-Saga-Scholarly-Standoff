@@ -40,6 +40,7 @@ import Scene2 from "./Scene2";
 import PlayerHealthHUD from "../GameSystems/HUD/PlayerHealthHUD";
 import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
 import BossHealthbarHUD from "../GameSystems/HUD/BossHealthHUD";
+import AttackActor from "../Actors/AttackActor";
 
 export default class MainHW4Scene extends HW4Scene {
 
@@ -94,7 +95,9 @@ export default class MainHW4Scene extends HW4Scene {
 
     private win: boolean;
 
-    
+    // Attacks
+    private left_fist: AttackActor;
+    private right_fist: AttackActor;
     
    
     public constructor(viewport: Viewport, sceneManager: SceneManager, renderingManager: RenderingManager, options: Record<string, any>) {
@@ -123,6 +126,8 @@ export default class MainHW4Scene extends HW4Scene {
         this.load.spritesheet("boss", "hw4_assets/spritesheets/s4_boss_v2.json");
         this.load.spritesheet("bossFast", "hw4_assets/spritesheets/s4_boss_fast.json");
         this.load.spritesheet("bossSlow", "hw4_assets/spritesheets/s4_boss_slow.json");
+        this.load.spritesheet("left_fist", "hw4_assets/spritesheets/s4_fist_left.json");
+        this.load.spritesheet("right_fist", "hw4_assets/spritesheets/s4_fist_right.json");
 
         // Load the tilemap
         this.load.tilemap("level", "hw4_assets/tilemaps/boss_map_1.json");
@@ -359,13 +364,45 @@ export default class MainHW4Scene extends HW4Scene {
         if(type === "light") {
             this.attackMarker = <Rect>this.add.graphic(GraphicType.RECT, "primary", { position: damageSource, 
                 size: new Vec2(halfAttackWidth*2, halfAttackLength*2)});
-            this.attackMarker.color = new Color(255, 0, 255, .20);
+            this.attackMarker.color = new Color(255, 0, 255, 0);
+            //Set the left fist to the correct position
+            this.left_fist.position.set(damageSource.x, damageSource.y);
+            //Play the fist animation based on the direction the player is facing
+            if(controller.rotation === 0) {
+                this.left_fist.animation.play("UP", false);
+            }
+            else if(controller.rotation === Math.PI ){
+                this.left_fist.animation.play("DOWN", false);
+            }
+            else if(controller.rotation === Math.PI/2 ){
+                this.left_fist.animation.play("LEFT", false);
+            }
+            else {
+                this.left_fist.animation.play("RIGHT", false);
+            }
+            this.left_fist.visible = true;
             damage = 1.25; // 00001 to avoid rounding down error
         }
         else if(type === "heavy") {
             this.attackMarker = <Rect>this.add.graphic(GraphicType.RECT, "primary", { position: damageSource,
                 size: new Vec2(halfAttackWidth*2, halfAttackLength*2)});
-            this.attackMarker.color = new Color(255, 255, 0, .20);
+            this.attackMarker.color = new Color(255, 255, 0, 0);
+            //Set the right fist to the correct position
+            this.right_fist.position.set(damageSource.x, damageSource.y);
+            //Play the fist animation based on the direction the player is facing
+            if(controller.rotation === 0) {
+                this.right_fist.animation.play("UP", false);
+            }
+            else if(controller.rotation === Math.PI ){
+                this.right_fist.animation.play("DOWN", false);
+            }
+            else if(controller.rotation === Math.PI/2 ){
+                this.right_fist.animation.play("LEFT", false);
+            }
+            else {
+                this.right_fist.animation.play("RIGHT", false);
+            }
+            this.right_fist.visible = true;
             damage = 2; // 00001 to avoid rounding down error
         }
         
@@ -397,6 +434,8 @@ export default class MainHW4Scene extends HW4Scene {
 
     protected handleAttackOver(): void {
         this.attackMarker.visible = false;
+        this.left_fist.visible = false;
+        this.right_fist.visible = false;
     }
 
     protected handleBossAttackTimer(actor: NPCActor): void {
@@ -586,6 +625,42 @@ export default class MainHW4Scene extends HW4Scene {
         player.battleGroup = 2;
         //Scale the player sprite to be 1.5x the size of the tile
         player.scale.set(1.5, 1.5);
+
+        // Initialize left fist as an animatedSprite
+        let left_fist = this.add.animatedSprite(AttackActor, "left_fist", "primary");
+        left_fist.position.set(0, 0);
+        left_fist.visible = false;
+        left_fist.scale.set(1, 1);
+        left_fist.tweens.add("LEFT", {
+            startDelay: 0,
+            duration: 100,
+            effects: [
+                {
+                    property: "positionX",
+                    start: 0,
+                    end: -10,
+                }
+            ],
+        });
+        this.left_fist = left_fist;
+
+        //Initialize right fist
+        let right_fist = this.add.animatedSprite(AttackActor, "right_fist", "primary");
+        right_fist.position.set(0, 0);
+        right_fist.visible = false;
+        right_fist.scale.set(2.2, 2.2);
+        right_fist.tweens.add("RIGHT", {
+            startDelay: 0,
+            duration: 100,
+            effects: [
+                {
+                    property: "positionX",
+                    start: 0,
+                    end: 10,
+                }
+            ],
+        });
+        this.right_fist = right_fist;
 
         player.health = 4;
         player.maxHealth = 4;
