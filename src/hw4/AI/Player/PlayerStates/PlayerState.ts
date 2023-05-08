@@ -45,7 +45,7 @@ export default abstract class PlayerState extends State {
         super(parent);
         this.owner = owner;
         this.dodgeCharges = 4;
-        this.receiver = new Receiver(); //might need to initialize an emitter as well
+        this.receiver = new Receiver(); 
         this.receiver.subscribe(PlayerEvent.PLAYER_ATTACKED);
         this.receiver.subscribe(PlayerEvent.ATTACK_OVER);
         this.receiver.subscribe(PlayerEvent.PLAYER_DODGED);
@@ -118,6 +118,9 @@ export default abstract class PlayerState extends State {
             //this.owner.animation.play("DODGE_START", false, PlayerEvent.DODGE_OVER);
             //console.log("Dodge Start");
             this.dodgeCharges = this.dodgeCharges - 1;
+            this.emitter.fireEvent(PlayerEvent.DODGE_CHANGE, {curchrg: this.dodgeCharges, maxchrg: 4, type: "decrease"});
+            this.handleDodged();
+            
 
             let vec: Vec2 = Vec2.ZERO;
             vec = this.owner.position.vecTo(Input.getGlobalMousePosition());
@@ -132,8 +135,8 @@ export default abstract class PlayerState extends State {
             else if(vec.y < -limitter)
                 vec.y = -limitter;
             this.parent.owner.move(vec);
-            this.emitter.fireEvent(PlayerEvent.DODGE_CHANGE, {curchrg: this.dodgeCharges,maxchrg: 4});
-            this.handleDodged();
+            
+        
             
         }
 
@@ -170,10 +173,13 @@ export default abstract class PlayerState extends State {
         this.dodgedTimer.start();
     }
     protected handleDodgeTimerEnd =()=>{
+        if(this.dodgeCharges === 4){ //prevent re-setting to 4
+            return;
+        }
         this.dodgeCharges = MathUtils.clamp(this.dodgeCharges + 1, 0, 4);
         //this.emitter =new Emitter();
-        this.emitter.fireEvent(PlayerEvent.DODGE_CHANGE, {curchrg: this.dodgeCharges,maxchrg: 4});
-        if (this.dodgeCharges <4){
+        this.emitter.fireEvent(PlayerEvent.DODGE_CHANGE, {curchrg: this.dodgeCharges,maxchrg: 4, type: "increase"});
+        if (this.dodgeCharges < 4){
             this.dodgedTimer.start();
         }
     }
