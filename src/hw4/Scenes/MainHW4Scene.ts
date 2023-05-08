@@ -627,6 +627,10 @@ export default class MainHW4Scene extends HW4Scene {
         this.DodgeIcons[1] = this.add.sprite("dodgeIcon","health2");
         this.DodgeIcons[2] = this.add.sprite("dodgeIcon","health2");
         this.DodgeIcons[3] = this.add.sprite("dodgeIcon","health2");
+        this.DodgeIcons[0].visible = true;
+        this.DodgeIcons[1].visible = true;
+        this.DodgeIcons[2].visible = true;
+        this.DodgeIcons[3].visible = true;
         this.DodgeIcons[0].scale.set(.25,.25);
         this.DodgeIcons[1].scale.set(.25,.25);
         this.DodgeIcons[2].scale.set(.25,.25);
@@ -657,6 +661,7 @@ export default class MainHW4Scene extends HW4Scene {
     protected initializeBoss(speed: number, health: number, maxHealth: number, bossX: number, bossY: number,
           damage: number, attackSpeed: number, attackWidth: number, attackLength: number): number {
         let boss = this.add.animatedSprite(NPCActor, "boss", "primary");
+        boss.visible= true;
         boss.scale.set(1.5, 1.5);
         boss.position.set(bossX, bossY);
         boss.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
