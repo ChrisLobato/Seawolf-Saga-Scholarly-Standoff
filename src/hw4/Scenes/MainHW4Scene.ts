@@ -121,6 +121,8 @@ export default class MainHW4Scene extends HW4Scene {
 
         // Load in the enemy sprites
         this.load.spritesheet("boss", "hw4_assets/spritesheets/s4_boss_v2.json");
+        this.load.spritesheet("bossFast", "hw4_assets/spritesheets/s4_boss_fast.json");
+        this.load.spritesheet("bossSlow", "hw4_assets/spritesheets/s4_boss_slow.json");
 
         // Load the tilemap
         this.load.tilemap("level", "hw4_assets/tilemaps/boss_map_1.json");
@@ -161,27 +163,22 @@ export default class MainHW4Scene extends HW4Scene {
         this.initializeNavmesh();
 
         // Create the boss/es
-        let bossSpeed = 10;
-        let bossHealth = 10;
-        let bossMaxHealth = 10;
-        let bossX = 200;
-        let bossY = 200;
-        let bossDamage = 1;
-        let bossAttackWidth = 50;
-        let bossAttackLength = 25;
-        let bossAttackSpeed = 1250;
-        let bossAttackDelayDiff = 250;
-        let id = this.initializeBoss(bossSpeed, bossHealth, bossMaxHealth, bossX, bossY, 
-            bossDamage, bossAttackSpeed, bossAttackWidth, bossAttackLength);
-        // make sure this is never longer than the timer in the attack.ts action file
-        let tm = new Timer(bossAttackSpeed-bossAttackDelayDiff, this.handleBossAttack);
-        this.bossTimers.push({id: id, timer: tm});
+        let bossAttackSpeed = 1750;
+        let bossAttackDelayDiff = 250; 
+        let id = this.initializeBoss(11, 10, 10, 100, 200, 1, bossAttackSpeed, 50, 35, "boss");
+        let tm = new Timer(bossAttackSpeed-bossAttackDelayDiff, this.handleBossAttack);this.bossTimers.push({id: id, timer: tm});
 
-        id = this.initializeBoss(5, bossHealth, bossMaxHealth, bossX, bossY, 
-            bossDamage, bossAttackSpeed, bossAttackWidth, bossAttackLength);
+        bossAttackSpeed = 2250;
+        bossAttackDelayDiff = 300;
+        id = this.initializeBoss(11, 10, 10, 200, 200, 1, bossAttackSpeed, 75, 50, "bossSlow");
         tm = new Timer(bossAttackSpeed-bossAttackDelayDiff, this.handleBossAttack);
         this.bossTimers.push({id: id, timer: tm});
 
+        bossAttackSpeed = 1500;
+        bossAttackDelayDiff = 200;
+        id = this.initializeBoss(16, 10, 10, 300, 200, 1, bossAttackSpeed,40, 20, "bossFast");
+        tm = new Timer(bossAttackSpeed-bossAttackDelayDiff, this.handleBossAttack);
+        this.bossTimers.push({id: id, timer: tm});
         
 
         // Subscribe to relevant events
@@ -661,8 +658,9 @@ export default class MainHW4Scene extends HW4Scene {
      * Initialize the boss
      */
     protected initializeBoss(speed: number, health: number, maxHealth: number, bossX: number, bossY: number,
-          damage: number, attackSpeed: number, attackWidth: number, attackLength: number): number {
-        let boss = this.add.animatedSprite(NPCActor, "boss", "primary");
+          damage: number, attackSpeed: number, attackWidth: number, attackLength: number, type: string): number {
+        let boss = this.add.animatedSprite(NPCActor, type, "primary");
+        console.log("type in initialize boss:", type);
         boss.visible= true;
         boss.scale.set(1.5, 1.5);
         boss.position.set(bossX, bossY);
