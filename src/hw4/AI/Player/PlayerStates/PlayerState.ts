@@ -40,6 +40,7 @@ export default abstract class PlayerState extends State {
     protected dodgeCharges: number;
     protected attackFlag: boolean;
     private dodgedTimer: Timer;
+    private pauseMenuTimer: Timer;
 
     public constructor(parent: PlayerAI, owner: PlayerActor) {
         super(parent);
@@ -52,6 +53,7 @@ export default abstract class PlayerState extends State {
         this.receiver.subscribe(PlayerEvent.DODGE_OVER);
         this.attackFlag = false;
         this.dodgedTimer = new Timer(2500, this.handleDodgeTimerEnd,false);
+        this.pauseMenuTimer = new Timer(1000); // just need some time so it doesnt send a million events with just one press maybe could do this with a variable but dont want to have too much back and forth
     }
 
     public override onEnter(options: Record<string, any>): void {}
@@ -139,7 +141,10 @@ export default abstract class PlayerState extends State {
         
             
         }
-
+        if(this.parent.controller.pausing && this.pauseMenuTimer.isStopped()){
+            this.pauseMenuTimer.start();
+            this.emitter.fireEvent(HudEvent.PAUSE_MENU_START); //currently sending event with no payload
+        }
     }
 
     public override handleInput(event: GameEvent): void {
@@ -199,4 +204,5 @@ import Vec2 from "../../../../Wolfie2D/DataTypes/Vec2";
 import Input from "../../../../Wolfie2D/Input/Input";
 import MathUtils from "../../../../Wolfie2D/Utils/MathUtils";
 import Timer from "../../../../Wolfie2D/Timing/Timer";
+import { PlayerInput } from "../PlayerController";
 export { Idle, Invincible, Moving, Attacking, HeavyAttacking, Dodging, Dead} 

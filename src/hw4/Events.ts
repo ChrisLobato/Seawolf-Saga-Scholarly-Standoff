@@ -18,7 +18,9 @@ export enum ItemEvent {
 }
 
 export enum HudEvent {
-    HEALTH_CHANGE = "HEALTH_CHANGE"
+    HEALTH_CHANGE = "HEALTH_CHANGE",
+    PAUSE_MENU_START = "PAUSE_MENU_START",
+
 }
 
 export enum PlayerEvent {

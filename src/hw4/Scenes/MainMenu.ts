@@ -15,6 +15,7 @@ export default class MainMenu extends Scene {
     // Layers, for multiple main menu screens
     private mainMenu: Layer;
     private background: Layer;
+    public levelsCompleted
 
     public loadScene(){
         this.load.image("MainMenu", "hw4_assets/sprites/MainMenu.png");
@@ -23,11 +24,25 @@ export default class MainMenu extends Scene {
 
     }
 
+
+    public initScene(options: Record<string, any>): void {
+        //this is where we can initialize and pass some information to the main menu scene and by proxy send it to the level select
+        if(options!== undefined){
+            this.levelsCompleted = options.completedLevels;
+        }
+        
+    }
+
     public startScene(){
-        const center = this.viewport.getCenter();
+        const center = new Vec2(510,510); //originally was done through get center but viewport center kept changing after second scene init so changed to this
+
         let size = this.viewport.getHalfSize();
         this.viewport.setFocus(size);
         this.viewport.setZoomLevel(1);
+        console.log(this.levelsCompleted);
+        if(this.levelsCompleted === undefined){
+            this.levelsCompleted = 0; //set it to 0 should go through this only in the initial start from the splash screen
+        }
         
         // The main menu
         this.mainMenu = this.addUILayer("mainMenu");
@@ -94,19 +109,19 @@ export default class MainMenu extends Scene {
     public handleEvent(event: GameEvent): void {
         switch(event.type) {
             case "play": {
-                this.sceneManager.changeToScene(MainHW4Scene);
+                this.sceneManager.changeToScene(MainHW4Scene,{completedLevels: this.levelsCompleted},{});
                 break;
             }
             case "level select": {
-                this.sceneManager.changeToScene(LevelsScreen);
+                this.sceneManager.changeToScene(LevelsScreen,{completedLevels: this.levelsCompleted},{});
                 break;
             }
             case "controls":{
-                this.sceneManager.changeToScene(ControlsScreen);
+                this.sceneManager.changeToScene(ControlsScreen,{completedLevels: this.levelsCompleted},{});
                 break;
             }
             case "help": {
-                this.sceneManager.changeToScene(HelpScreen);
+                this.sceneManager.changeToScene(HelpScreen,{completedLevels: this.levelsCompleted},{});
                 break;
             }
         }

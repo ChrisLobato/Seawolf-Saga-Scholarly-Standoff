@@ -52,7 +52,7 @@ export default class SplashScreen extends Scene {
     public handleEvent(event: GameEvent): void {
         switch(event.type){
             case "start":
-                this.sceneManager.changeToScene(MainMenu);
+                this.sceneManager.changeToScene(MainMenu,{completedLevels: 0},{});
                 break;
         }
     }

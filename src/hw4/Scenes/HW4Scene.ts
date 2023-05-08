@@ -7,6 +7,7 @@ import Battler from "../GameSystems/BattleSystem/Battler";
 
 
 export default abstract class HW4Scene extends Scene {
+    
 
     public abstract getBattlers(): Battler[];
 
@@ -17,5 +18,8 @@ export default abstract class HW4Scene extends Scene {
     public abstract getLaserGuns(): LaserGun[];
 
     public abstract isTargetVisible(position: Vec2, target: Vec2): boolean;
-    
+
+    public paused: boolean;    
+
+    public currentLevel: number;
 }
