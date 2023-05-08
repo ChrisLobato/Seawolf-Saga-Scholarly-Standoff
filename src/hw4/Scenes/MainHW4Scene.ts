@@ -69,7 +69,7 @@ export default class MainHW4Scene extends HW4Scene {
     private bases: BattlerBase[];
     private HealthIcons: Array<Sprite>;
     private DodgeIcons: Array<Sprite>;
-    private currentDodge = 3;
+    private currentDodge: number;
     private PlayerHealthBar: PlayerHealthHUD;
 
     private healthpacks: Array<Healthpack>;
@@ -170,9 +170,10 @@ export default class MainHW4Scene extends HW4Scene {
         // Create the boss/es
         let bossAttackSpeed = 1750;
         let bossAttackDelayDiff = 250; 
-        let id = this.initializeBoss(11, 10, 10, 100, 200, 1, bossAttackSpeed, 50, 35, "boss");
+        let id = this.initializeBoss(1, 10, 10, 100, 200, 1, bossAttackSpeed, 50, 35, "boss");
         let tm = new Timer(bossAttackSpeed-bossAttackDelayDiff, this.handleBossAttack);this.bossTimers.push({id: id, timer: tm});
 
+        /*
         bossAttackSpeed = 2250;
         bossAttackDelayDiff = 300;
         id = this.initializeBoss(11, 10, 10, 200, 200, 1, bossAttackSpeed, 75, 50, "bossSlow");
@@ -184,6 +185,7 @@ export default class MainHW4Scene extends HW4Scene {
         id = this.initializeBoss(16, 10, 10, 300, 200, 1, bossAttackSpeed,40, 20, "bossFast");
         tm = new Timer(bossAttackSpeed-bossAttackDelayDiff, this.handleBossAttack);
         this.bossTimers.push({id: id, timer: tm});
+        */
         
 
         // Subscribe to relevant events
@@ -260,7 +262,7 @@ export default class MainHW4Scene extends HW4Scene {
             }
             case PlayerEvent.DODGE_CHANGE: {
                 // console.log("HERE");
-                this.handleDodgeChargeChange(event.data.get("curchrg"),event.data.get("maxchrg"));
+                this.handleDodgeChargeChange(event.data.get("curchrg"),event.data.get("maxchrg"), event.data.get("type"));
                 break;
             }
             case PlayerEvent.DODGE_OVER: {
@@ -307,13 +309,34 @@ export default class MainHW4Scene extends HW4Scene {
         }
     }
 
-    protected handleDodgeChargeChange(currentCharge: number, maxCharge:number): void {
+    protected handleDodgeChargeChange(currentCharge: number, maxCharge: number, type: string): void {
+        console.log("Current: ", this.currentDodge);
+        console.log("New: ", type, currentCharge);
+
+        // if increasing LOWER than current
+        if(type === "increase" && currentCharge < this.currentDodge){
+            console.log("ignored eronous increase");
+            return; // ignore this event
+        }
+        // if decreasing HIGHER than current
+        if(type === "decrease" && currentCharge > this.currentDodge){
+            console.log("ignored eronous decrease");
+            return; // ignore this event
+        }
+
+        if(currentCharge - this.currentDodge > 1 || currentCharge - this.currentDodge < -1){
+            console.log("skipping charges");
+            return;
+        }
+        
         for(let i = currentCharge; i < this.DodgeIcons.length; i++ ){
             this.DodgeIcons[i].visible = false;
         }
         for(let i = 0; i < currentCharge && i<this.DodgeIcons.length;i++){
             this.DodgeIcons[i].visible = true;
         }
+        this.currentDodge = currentCharge;
+
 
     }
     
