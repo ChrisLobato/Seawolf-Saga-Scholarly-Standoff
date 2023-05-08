@@ -13,12 +13,21 @@ export default class HelpScreen extends Scene {
 
     private background: Layer;
     private helpscreen: Layer;
+    private levelsCompleted: number;
     
     
     public loadScene(){
         this.load.image("HelpScreen","hw4_assets/sprites/HelpScreen.png");
         //this.load.image("logo", "hw4_assets/sprites/TransparentLogo.png");
     }    
+
+    public initScene(options: Record<string, any>): void {
+        //this is where we can initialize and pass some information to the main menu scene and by proxy send it to the level select
+        if(options!== undefined){
+            this.levelsCompleted = options.completedLevels;
+        }
+        
+    }
 
     public startScene(): void {
         const center = this.viewport.getCenter();
@@ -61,7 +70,7 @@ export default class HelpScreen extends Scene {
     public handleEvent(event: GameEvent): void {
         switch(event.type){
             case "start":
-                this.sceneManager.changeToScene(MainMenu);
+                this.sceneManager.changeToScene(MainMenu,{completedLevels: this.levelsCompleted},{});
                 break;
         }
     }

@@ -20,4 +20,6 @@ export default abstract class HW4Scene extends Scene {
     public abstract isTargetVisible(position: Vec2, target: Vec2): boolean;
 
     public paused: boolean;    
+
+    public currentLevel: number;
 }

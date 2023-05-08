@@ -161,7 +161,7 @@ export default class MainHW4Scene extends HW4Scene {
     public override startScene() {
         // Add in the tilemap
         let tilemapLayers = this.add.tilemap("level");
-
+        this.currentLevel = 1;
         // Get the wall layer
         this.walls = <OrthogonalTilemap>tilemapLayers[1].getItems()[0];
 
@@ -347,7 +347,9 @@ export default class MainHW4Scene extends HW4Scene {
                 break;
             }
             case "Main Menu":{
-                console.log("About to handle Main Menu");
+                console.log("About to handle Main Menu"); //goes through this case after the main menu button has been pressed in the pause menu
+                this.sceneManager.changeToScene(MainMenu,{completedLevels: this.currentLevel},{});
+                
                 break;
             }
             default: {
