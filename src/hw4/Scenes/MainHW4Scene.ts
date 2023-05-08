@@ -71,7 +71,7 @@ export default class MainHW4Scene extends HW4Scene {
     private bases: BattlerBase[];
     private HealthIcons: Array<Sprite>;
     private DodgeIcons: Array<Sprite>;
-    private currentDodge = 3;
+    private currentDodge: number;
     private PlayerHealthBar: PlayerHealthHUD;
 
     private healthpacks: Array<Healthpack>;
@@ -130,6 +130,8 @@ export default class MainHW4Scene extends HW4Scene {
 
         // Load in the enemy sprites
         this.load.spritesheet("boss", "hw4_assets/spritesheets/s4_boss_v2.json");
+        this.load.spritesheet("bossFast", "hw4_assets/spritesheets/s4_boss_fast.json");
+        this.load.spritesheet("bossSlow", "hw4_assets/spritesheets/s4_boss_slow.json");
 
         // Load the tilemap
         this.load.tilemap("level", "hw4_assets/tilemaps/boss_map_1.json");
@@ -166,24 +168,26 @@ export default class MainHW4Scene extends HW4Scene {
 
         this.initLayers();
         //init the pause Menu Shtuff REVISIT To move maybe into a function in HW4Scene.ts so everything inherits it
-        this.pauseScreen = <Rect>this.add.graphic(GraphicType.RECT, "primary", { position: new Vec2(this.viewport.getCenter().x, this.viewport.getCenter().y), size: new Vec2(4000, 4000) });
+        let menuLayer = this.addUILayer("Pause Menu");
+        menuLayer.setDepth(100);
+        this.pauseScreen = <Rect>this.add.graphic(GraphicType.RECT, "Pause Menu", { position: new Vec2(this.viewport.getCenter().x, this.viewport.getCenter().y), size: new Vec2(4000, 4000) });
         this.pauseScreen.setColor(Color.BLACK);
         this.pauseScreen.alpha = 0;
         this.pauseScreen.visible = false;
-        this.pauseLabel = <Label>this.add.uiElement(UIElementType.LABEL,"primary", {position: new Vec2(this.getViewport().getCenter().x, this.getViewport().getCenter().y),text: "GAME PAUSED"});
-        this.pauseLabel.size.set(300,30);
+        this.pauseLabel = <Label>this.add.uiElement(UIElementType.LABEL,"Pause Menu", {position: new Vec2(this.getViewport().getCenter().x, this.getViewport().getCenter().y),text: "GAME PAUSED"});
+        this.pauseLabel.size.set(200,30);
         this.pauseLabel.fontSize = 30;
         this.pauseLabel.font = "Courier";
         this.pauseLabel.setTextColor(Color.WHITE);
         this.pauseLabel.visible = false;
-        this.pauseButton = <Button>this.add.uiElement(UIElementType.BUTTON,"primary",{position: new Vec2(this.getViewport().getCenter().x, this.getViewport().getCenter().y), text: "Main Menu"})
+        this.pauseButton = <Button>this.add.uiElement(UIElementType.BUTTON,"Pause Menu",{position: new Vec2(this.getViewport().getCenter().x, this.getViewport().getCenter().y), text: "Main Menu"})
         this.pauseButton.size.set(200,100);
         this.pauseButton.borderWidth = 2;
         this.pauseButton.borderColor = Color.WHITE;
         this.pauseButton.backgroundColor =Color.TRANSPARENT;
         this.pauseButton.onClickEventId = "Main Menu";
         this.pauseButton.visible = false;
-        this.resumeButton = <Button>this.add.uiElement(UIElementType.BUTTON,"primary",{position: new Vec2(this.getViewport().getCenter().x, this.getViewport().getCenter().y), text: "Resume"})
+        this.resumeButton = <Button>this.add.uiElement(UIElementType.BUTTON,"Pause Menu",{position: new Vec2(this.getViewport().getCenter().x, this.getViewport().getCenter().y), text: "Resume"})
         this.resumeButton.size.set(200,100);
         this.resumeButton.borderWidth = 2;
         this.resumeButton.borderColor = Color.WHITE;
@@ -195,27 +199,24 @@ export default class MainHW4Scene extends HW4Scene {
         this.initializeNavmesh();
 
         // Create the boss/es
-        let bossSpeed = 10;
-        let bossHealth = 10;
-        let bossMaxHealth = 10;
-        let bossX = 200;
-        let bossY = 200;
-        let bossDamage = 1;
-        let bossAttackWidth = 50;
-        let bossAttackLength = 25;
-        let bossAttackSpeed = 1250;
-        let bossAttackDelayDiff = 250;
-        let id = this.initializeBoss(bossSpeed, bossHealth, bossMaxHealth, bossX, bossY, 
-            bossDamage, bossAttackSpeed, bossAttackWidth, bossAttackLength);
-        // make sure this is never longer than the timer in the attack.ts action file
-        let tm = new Timer(bossAttackSpeed-bossAttackDelayDiff, this.handleBossAttack);
-        this.bossTimers.push({id: id, timer: tm});
+        let bossAttackSpeed = 1750;
+        let bossAttackDelayDiff = 250; 
+        let id = this.initializeBoss(1, 10, 10, 100, 200, 1, bossAttackSpeed, 50, 35, "boss");
+        let tm = new Timer(bossAttackSpeed-bossAttackDelayDiff, this.handleBossAttack);this.bossTimers.push({id: id, timer: tm});
 
-        id = this.initializeBoss(5, bossHealth, bossMaxHealth, bossX, bossY, 
-            bossDamage, bossAttackSpeed, bossAttackWidth, bossAttackLength);
+        /*
+        bossAttackSpeed = 2250;
+        bossAttackDelayDiff = 300;
+        id = this.initializeBoss(11, 10, 10, 200, 200, 1, bossAttackSpeed, 75, 50, "bossSlow");
         tm = new Timer(bossAttackSpeed-bossAttackDelayDiff, this.handleBossAttack);
         this.bossTimers.push({id: id, timer: tm});
 
+        bossAttackSpeed = 1500;
+        bossAttackDelayDiff = 200;
+        id = this.initializeBoss(16, 10, 10, 300, 200, 1, bossAttackSpeed,40, 20, "bossFast");
+        tm = new Timer(bossAttackSpeed-bossAttackDelayDiff, this.handleBossAttack);
+        this.bossTimers.push({id: id, timer: tm});
+        */
         
 
         // Subscribe to relevant events
@@ -294,7 +295,7 @@ export default class MainHW4Scene extends HW4Scene {
             }
             case PlayerEvent.DODGE_CHANGE: {
                 // console.log("HERE");
-                this.handleDodgeChargeChange(event.data.get("curchrg"),event.data.get("maxchrg"));
+                this.handleDodgeChargeChange(event.data.get("curchrg"),event.data.get("maxchrg"), event.data.get("type"));
                 break;
             }
             case PlayerEvent.DODGE_OVER: {
@@ -350,13 +351,34 @@ export default class MainHW4Scene extends HW4Scene {
         }
     }
 
-    protected handleDodgeChargeChange(currentCharge: number, maxCharge:number): void {
+    protected handleDodgeChargeChange(currentCharge: number, maxCharge: number, type: string): void {
+        console.log("Current: ", this.currentDodge);
+        console.log("New: ", type, currentCharge);
+
+        // if increasing LOWER than current
+        if(type === "increase" && currentCharge < this.currentDodge){
+            console.log("ignored eronous increase");
+            return; // ignore this event
+        }
+        // if decreasing HIGHER than current
+        if(type === "decrease" && currentCharge > this.currentDodge){
+            console.log("ignored eronous decrease");
+            return; // ignore this event
+        }
+
+        if(currentCharge - this.currentDodge > 1 || currentCharge - this.currentDodge < -1){
+            console.log("skipping charges");
+            return;
+        }
+        
         for(let i = currentCharge; i < this.DodgeIcons.length; i++ ){
             this.DodgeIcons[i].visible = false;
         }
         for(let i = 0; i < currentCharge && i<this.DodgeIcons.length;i++){
             this.DodgeIcons[i].visible = true;
         }
+        this.currentDodge = currentCharge;
+
 
     }
     
@@ -369,22 +391,25 @@ export default class MainHW4Scene extends HW4Scene {
         this.paused = !this.paused;
         //Create or make visible a Button that is tied to the pause boolean
         //create a rect this.levelTra
-
+        let center = this.viewport.getCenter();
+        this.player.positionX;
+        this.player.positionY;
         if(this.paused){
             //If this is paused
             let primaryLayer = this.getLayer("primary");
             this.pauseScreen.visible = true;
             this.pauseScreen.alpha = 0.4;
-            this.pauseLabel.positionX = this.getViewport().getCenter().x;
-            this.pauseLabel.positionY = this.getViewport().getCenter().y
+            this.pauseLabel.positionX = 0+175;
+            this.pauseLabel.positionY = 0+100;
             this.pauseLabel.visible = true;
-            this.pauseButton.positionX = this.getViewport().getCenter().x;
-            this.pauseButton.positionY = this.getViewport().getCenter().y+100;
-            this.resumeButton.positionX = this.getViewport().getCenter().x;
-            this.resumeButton.positionY = this.getViewport().getCenter().y+50;
+            this.pauseButton.positionX = 0+175;
+            this.pauseButton.positionY = 0+150;
+            this.resumeButton.positionX = 0+175;
+            this.resumeButton.positionY = 0+200;
             //this.resumeButton.set 
             this.pauseButton.visible = true;
             this.resumeButton.visible = true;
+            
             //primaryLayer.disable(); might not need to disable because we are going to freeze everything
             this.player.freeze();
             this.player.aiActive = false;   //disables player click attack so we can click buttons
@@ -406,6 +431,13 @@ export default class MainHW4Scene extends HW4Scene {
             this.pauseLabel.visible = false;
             this.pauseButton.visible = false;
             this.resumeButton.visible = false;
+            // this.pauseLabel.positionX = this.viewport.getCenter().x;
+            // this.pauseLabel.positionY = this.viewport.getCenter().y;
+            // this.pauseLabel.visible = true;
+            // this.pauseButton.positionX = this.viewport.getCenter().x;
+            // this.pauseButton.positionY = this.viewport.getCenter().y;
+            // this.resumeButton.positionX = this.viewport.getCenter().x;
+            // this.resumeButton.positionY = this.viewport.getCenter().y;
             this.player.unfreeze();
             this.player.aiActive = true;
             for(let i = 0;i < this.battlers.length;i++){
@@ -760,8 +792,9 @@ export default class MainHW4Scene extends HW4Scene {
      * Initialize the boss
      */
     protected initializeBoss(speed: number, health: number, maxHealth: number, bossX: number, bossY: number,
-          damage: number, attackSpeed: number, attackWidth: number, attackLength: number): number {
-        let boss = this.add.animatedSprite(NPCActor, "boss", "primary");
+          damage: number, attackSpeed: number, attackWidth: number, attackLength: number, type: string): number {
+        let boss = this.add.animatedSprite(NPCActor, type, "primary");
+        console.log("type in initialize boss:", type);
         boss.visible= true;
         boss.scale.set(1.5, 1.5);
         boss.position.set(bossX, bossY);
