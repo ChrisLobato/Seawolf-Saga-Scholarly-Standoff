@@ -115,7 +115,7 @@ export default class MainHW4Scene extends HW4Scene {
         this.load.spritesheet("boss", "hw4_assets/spritesheets/s4_boss_v2.json");
 
         // Load the tilemap
-        this.load.tilemap("level", "hw4_assets/tilemaps/boss_map_1.json");
+        this.load.tilemap("level", "hw4_assets/tilemaps/boss_map_2.json");
 
         this.load.image("healthIcon", "hw4_assets/sprites/WolfieHealth.png");
         this.load.image("dodgeIcon", "hw4_assets/sprites/DodgeIcon.png");
