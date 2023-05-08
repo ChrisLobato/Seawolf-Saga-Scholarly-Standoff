@@ -53,7 +53,7 @@ export default abstract class PlayerState extends State {
         this.receiver.subscribe(PlayerEvent.DODGE_OVER);
         this.attackFlag = false;
         this.dodgedTimer = new Timer(2500, this.handleDodgeTimerEnd,false);
-        this.pauseMenuTimer = new Timer(50); // just need some time so it doesnt send a million events with just one press maybe could do this with a variable but dont want to have too much back and forth
+        this.pauseMenuTimer = new Timer(1000); // just need some time so it doesnt send a million events with just one press maybe could do this with a variable but dont want to have too much back and forth
     }
 
     public override onEnter(options: Record<string, any>): void {}

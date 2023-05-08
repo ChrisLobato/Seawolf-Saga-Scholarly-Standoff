@@ -22,6 +22,7 @@ import SplashScreen from "./hw4/Scenes/SplashScreen";
             {name: PlayerInput.DODGING, keys: ["space"]},
             {name: PlayerInput.CHEAT_ADVANCE_LEVEL, keys: ["p"]},
             {name: PlayerInput.CHEAT_GOD_MODE, keys: ["o"]},
+            {name: PlayerInput.PAUSE_MENU, keys: ["m"]},
             {name: "slot1", keys: ["1"]},
             {name: "slot2", keys: ["2"]},
         ],

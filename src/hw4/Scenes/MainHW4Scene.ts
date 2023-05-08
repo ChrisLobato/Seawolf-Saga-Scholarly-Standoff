@@ -80,6 +80,9 @@ export default class MainHW4Scene extends HW4Scene {
     // The position graph for the navmesh
     private graph: PositionGraph;
 
+    // Graphics for Pause Menu
+    protected pauseScreen: Rect;
+
     private attackMarker: Graphic;
     private attackMarker2: Graphic;
 
@@ -108,8 +111,8 @@ export default class MainHW4Scene extends HW4Scene {
         this.bossMarkers = new Array<{id: number, marker: Graphic}>();
 
         this.healthbars = new Map<number, HealthbarHUD>();
-
         this.godMode = false;
+        this.paused = false;    //boolean that tells us if we are paused
     }
 
     /**
@@ -156,7 +159,11 @@ export default class MainHW4Scene extends HW4Scene {
         this.viewport.setZoomLevel(3);
 
         this.initLayers();
-        
+        this.pauseScreen = <Rect>this.add.graphic(GraphicType.RECT, "primary", { position: new Vec2(2000, 2000), size: new Vec2(4000, 4000) });
+        this.pauseScreen.setColor(Color.BLACK);
+        this.pauseScreen.alpha = 0;
+        this.pauseScreen.visible = false;
+
         this.initializePlayer();
         this.initializeNavmesh();
 
@@ -327,6 +334,40 @@ export default class MainHW4Scene extends HW4Scene {
     protected handlePauseMenu(): void {
         //This will handle loading and bringing up the pause menu
         console.log("Pause menu triggered");
+        this.paused = !this.paused;
+        //Create or make visible a Button that is tied to the pause boolean
+        //create a rect this.levelTra
+
+        if(this.paused){
+            //If this is paused
+            let primaryLayer = this.getLayer("primary");
+            this.pauseScreen.visible = true;
+            this.pauseScreen.alpha = 0.4;
+            //primaryLayer.disable(); might not need to disable because we are going to freeze everything
+            this.player.freeze();
+            for(let i = 0; i < this.battlers.length; i++){
+                this.battlers[i].freeze();
+                //this.battlers[i].battlerActive = false; // REVISIT right now its deactivating the battlers
+                if(this.battlers[i]!== this.player){
+                    this.battlers[i].aiActive = false;
+                }
+            }
+
+        }
+        else{
+            let primaryLayer = this.getLayer("primary");
+            //primaryLayer.enable();
+            this.pauseScreen.visible = false;
+            this.pauseScreen.alpha = 0;
+            this.player.unfreeze();
+            for(let i = 0;i < this.battlers.length;i++){
+                if(this.battlers[i] !== this.player){}
+                this.battlers[i].unfreeze();    //if enemies are added to battlers list then this should catch them all
+                //this.battlers[i].battlerActive = true;
+                this.battlers[i].aiActive = true;
+            }
+
+        }
     }
 
 
