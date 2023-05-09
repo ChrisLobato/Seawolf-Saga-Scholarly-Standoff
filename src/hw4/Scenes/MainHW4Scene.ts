@@ -348,8 +348,9 @@ export default class MainHW4Scene extends HW4Scene {
             }
             case "Main Menu":{
                 console.log("About to handle Main Menu"); //goes through this case after the main menu button has been pressed in the pause menu
+                this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: "bossMusic1"});
                 this.sceneManager.changeToScene(MainMenu,{completedLevels: this.currentLevel},{});
-                
+
                 break;
             }
             default: {
@@ -408,12 +409,15 @@ export default class MainHW4Scene extends HW4Scene {
             this.pauseScreen.alpha = 0.4;
             this.pauseLabel.positionX = 0+175;
             this.pauseLabel.positionY = 0+100;
+            
             this.pauseLabel.visible = true;
             this.pauseButton.positionX = 0+175;
             this.pauseButton.positionY = 0+150;
+            this.pauseButton.scale = new Vec2(.35,.35)
             this.resumeButton.positionX = 0+175;
             this.resumeButton.positionY = 0+200;
-            //this.resumeButton.set 
+            this.resumeButton.size.set(200,100);
+            this.resumeButton.scale= new Vec2(.35,.35)
             this.pauseButton.visible = true;
             this.resumeButton.visible = true;
             
