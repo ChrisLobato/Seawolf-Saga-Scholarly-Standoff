@@ -41,11 +41,11 @@ export default class BossHealthbarHUD implements Updateable {
 
     protected healthLabel: Label; //Label for boss name
     protected bossName;
-    public constructor(scene: Scene, owner: Health & Positioned & Unique, layer: string, options: HealthBarOptions) {
+    public constructor(scene: Scene, owner: Health & Positioned & Unique, layer: string, options: HealthBarOptions, name) {
         this.scene = scene;
         this.layer = layer;
         this.owner = owner;
-
+        this.bossName = name;
         this.size = options.size;
         this.offset = options.offset;
         let viewportCenter =   this.scene.getViewport().getCenter(); // gets the viewport center 
@@ -59,7 +59,7 @@ export default class BossHealthbarHUD implements Updateable {
         this.healthBarBg.borderWidth = 2;
         this.healthBarBg.size= new Vec2(600, 25);
 
-        this.healthLabel = <Label>this.scene.add.uiElement(UIElementType.LABEL, layer, {position: new Vec2(viewportCenter.x+1300,50), text: "John Script"});
+        this.healthLabel = <Label>this.scene.add.uiElement(UIElementType.LABEL, layer, {position: new Vec2(viewportCenter.x+1300,50), text: this.bossName});
 		this.healthLabel.size.set(300, 30);
 		this.healthLabel.fontSize = 24;
 		this.healthLabel.font = "Courier";
