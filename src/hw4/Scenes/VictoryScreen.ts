@@ -31,7 +31,6 @@ export default class VictoryScreen extends Scene {
         const gameOver = <Label>this.add.uiElement(UIElementType.LABEL, "primary", {position: new Vec2(center.x, center.y-200), text: "YOU WIN!"});
         gameOver.textColor = Color.WHITE;
 
-
         const time = <Label>this.add.uiElement(UIElementType.LABEL, "primary", {position: new Vec2(center.x, center.y-100), text: `You beat the game in ${(this.timeSurvived)} seconds!`});
         time.textColor = Color.GREEN;
 
@@ -42,13 +41,13 @@ export default class VictoryScreen extends Scene {
         damage.textColor = Color.GREEN;
 
         const credits = <Label>this.add.uiElement(UIElementType.LABEL, "primary", {position: new Vec2(center.x, center.y + 200), text: `Seawolf Saga: Scholarly Standoff Team:`});
-        damage.textColor = Color.WHITE;
+        credits.textColor = Color.WHITE;
 
         const team = <Label>this.add.uiElement(UIElementType.LABEL, "primary", {position: new Vec2(center.x, center.y + 250), text: `Sean O'Grady, Christopher Lobato, and Cameron Grieco`});
-        damage.textColor = Color.WHITE;
+        team.textColor = Color.WHITE;
 
         const thanks = <Label>this.add.uiElement(UIElementType.LABEL, "primary", {position: new Vec2(center.x, center.y + 350), text: `Thank you for playing!`});
-        damage.textColor = Color.WHITE;
+        thanks.textColor = Color.WHITE;
 
         const text = <Label>this.add.uiElement(UIElementType.LABEL, "primary", {position: new Vec2(center.x, center.y + 400), text: "Click to return to main menu"});
         text.textColor = Color.WHITE;
