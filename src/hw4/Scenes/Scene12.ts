@@ -664,7 +664,7 @@ export default class Scene12 extends HW4Scene {
         this.viewport.setFocus(size);
         this.viewport.setZoomLevel(1);
         this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: "bossMusic1"});
-        this.sceneManager.changeToScene(Transition5);
+        this.sceneManager.changeToScene(Transition5, {timesDodged: this.timesdodged, damageTaken: this.damageTaken, timeSurvived: this.timePassed, completedLevels: this.currentLevel});
     }
     protected handleSceneEndLose (): void {
         // recentering the viewport

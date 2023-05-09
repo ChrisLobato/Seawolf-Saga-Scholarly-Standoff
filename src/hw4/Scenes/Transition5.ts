@@ -12,6 +12,7 @@ import Scene2 from "./Scene2";
 import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
 import Scene4 from "./Scene4";
 import Scene8 from "./Scene8";
+import VictoryScreen from "./VictoryScreen";
 
 export default class Transition1 extends Scene {
   private background: Layer;
@@ -19,6 +20,18 @@ export default class Transition1 extends Scene {
   private buttonLayer: Layer;
   private clickCounter: number;
   private center: Vec2;
+
+  private timesDodged: number;
+  private damageTaken: number;
+  private timeSurvived: number;
+  private currentLevel: number;
+
+  public initScene(options: Record<string, any>): void {
+    this.timesDodged = options.timesDodged;
+    this.damageTaken = options.damageTaken;
+    this.timeSurvived = options.timeSurvived;
+    this.currentLevel = options.completedLevels;
+  }
 
   public loadScene() {
     this.load.image("black", "hw4_assets/sprites/black.png");
@@ -90,7 +103,7 @@ export default class Transition1 extends Scene {
           '"You truly had to endure a Seawolf saga back there.',
           'One might say, a scholarly standoff for the ages!"',
           "You smile, knowing that he just said the title of the game.",
-          "Roll Credits"
+          "Roll Credits",
         ];
         if (this.clickCounter < paragraphs.length) {
           // Display each line from paragraphs using clickCounter as index
@@ -130,7 +143,7 @@ export default class Transition1 extends Scene {
           this.emitter.fireEvent(GameEventType.STOP_SOUND, {
             key: "transitionMusic",
           });
-          this.sceneManager.changeToScene(MainMenu);
+          this.sceneManager.changeToScene(VictoryScreen, {timesDodged: this.timesDodged, damageTaken: this.damageTaken, timeSurvived: this.timeSurvived, completedLevels: this.currentLevel});
         }
         break;
     }
