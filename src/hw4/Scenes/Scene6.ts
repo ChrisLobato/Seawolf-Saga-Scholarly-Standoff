@@ -40,9 +40,9 @@ import PlayerHealthHUD from "../GameSystems/HUD/PlayerHealthHUD";
 import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
 import BossHealthbarHUD from "../GameSystems/HUD/BossHealthHUD";
 import AttackActor from "../Actors/AttackActor";
-import Scene4 from "./Scene4";
+import Scene7 from "./Scene7";
 
-export default class Scene3 extends HW4Scene {
+export default class Scene6 extends HW4Scene {
 
     /** GameSystems in the HW3 Scene */
     private inventoryHud: InventoryHUD;
@@ -120,7 +120,7 @@ export default class Scene3 extends HW4Scene {
      * @see Scene.update()
      */
     public override loadScene() {
-        // should all be saved from previous scene
+        // should all be saved from previous scene, besides the new tilemap
     }
     /**
      * @see Scene.startScene
@@ -128,7 +128,7 @@ export default class Scene3 extends HW4Scene {
     public override startScene() {
         // Add in the tilemap
         let tilemapLayers = this.add.tilemap("level");
-        this.currentLevel = 3;
+
         // Get the wall layer
         this.walls = <OrthogonalTilemap>tilemapLayers[1].getItems()[0];
 
@@ -145,8 +145,14 @@ export default class Scene3 extends HW4Scene {
 
         let bossAttackSpeed = 2250;
         let bossAttackDelayDiff = 300;
-        let id = this.initializeBoss(11, 10, 10, 200, 200, 1, bossAttackSpeed, 75, 50, "bossHeavy");
+        let id = this.initializeBoss(11, 10, 10, 100, 240, 1, bossAttackSpeed, 75, 50, "bossHeavy");
         let tm = new Timer(bossAttackSpeed-bossAttackDelayDiff, this.handleBossAttack);
+        this.bossTimers.push({id: id, timer: tm});
+
+        bossAttackSpeed = 1250;
+        bossAttackDelayDiff = 200;
+        id = this.initializeBoss(16, 10, 10, 90, 450, 1, bossAttackSpeed,40, 28, "bossFast");
+        tm = new Timer(bossAttackSpeed-bossAttackDelayDiff, this.handleBossAttack);
         this.bossTimers.push({id: id, timer: tm});
         
         // Subscribe to relevant events
@@ -514,7 +520,7 @@ export default class Scene3 extends HW4Scene {
         this.viewport.setFocus(size);
         this.viewport.setZoomLevel(1);
         this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: "bossMusic1"});
-        this.sceneManager.changeToScene(Scene4);
+        this.sceneManager.changeToScene(Scene7);
     }
     protected handleSceneEndLose (): void {
         // recentering the viewport
@@ -898,6 +904,7 @@ export default class Scene3 extends HW4Scene {
             this.load.keepAudio("bossMusic1");
             this.load.keepAudio("veryHeavyAttack");
 
+            this.load.keepTilemap("level");
         }
         else {
             console.log("not keeping anything, resetting to home screen");

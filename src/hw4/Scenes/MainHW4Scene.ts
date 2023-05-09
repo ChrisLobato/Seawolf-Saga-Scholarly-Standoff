@@ -98,6 +98,7 @@ export default class MainHW4Scene extends HW4Scene {
     private sceneEndWinDelayer: Timer;
     private sceneEndLoseDelayer: Timer;
     private disappearTimer: Timer;
+    private sceneSkipTimer: Timer;
 
     // Cheat Flags
     private godMode: boolean;
@@ -134,7 +135,7 @@ export default class MainHW4Scene extends HW4Scene {
         // Load in the enemy sprites
         this.load.spritesheet("boss", "hw4_assets/spritesheets/s4_boss_v2.json");
         this.load.spritesheet("bossFast", "hw4_assets/spritesheets/s4_boss_fast.json");
-        this.load.spritesheet("bossSlow", "hw4_assets/spritesheets/s4_boss_slow.json");
+        this.load.spritesheet("bossHeavy", "hw4_assets/spritesheets/s4_boss_slow.json");
         this.load.spritesheet("left_fist", "hw4_assets/spritesheets/s4_fist_left.json");
         this.load.spritesheet("right_fist", "hw4_assets/spritesheets/s4_fist_right.json");
 
@@ -206,19 +207,20 @@ export default class MainHW4Scene extends HW4Scene {
         // Create the boss/es
         let bossAttackSpeed = 1750;
         let bossAttackDelayDiff = 250; 
-        let id = this.initializeBoss(1, 10, 10, 100, 200, 1, bossAttackSpeed, 50, 35, "boss");
-        let tm = new Timer(bossAttackSpeed-bossAttackDelayDiff, this.handleBossAttack);this.bossTimers.push({id: id, timer: tm});
+        let id = this.initializeBoss(11, 10, 10, 200, 200, 1, bossAttackSpeed, 50, 35, "boss");
+        let tm = new Timer(bossAttackSpeed-bossAttackDelayDiff, this.handleBossAttack);
+        this.bossTimers.push({id: id, timer: tm});
 
         /*
         bossAttackSpeed = 2250;
         bossAttackDelayDiff = 300;
-        id = this.initializeBoss(11, 10, 10, 200, 200, 1, bossAttackSpeed, 75, 50, "bossSlow");
+        id = this.initializeBoss(11, 10, 10, 200, 200, 1, bossAttackSpeed, 75, 50, "bossHeavy");
         tm = new Timer(bossAttackSpeed-bossAttackDelayDiff, this.handleBossAttack);
         this.bossTimers.push({id: id, timer: tm});
 
-        bossAttackSpeed = 1500;
+        bossAttackSpeed = 1250;
         bossAttackDelayDiff = 200;
-        id = this.initializeBoss(16, 10, 10, 300, 200, 1, bossAttackSpeed,40, 20, "bossFast");
+        id = this.initializeBoss(16, 10, 10, 300, 200, 1, bossAttackSpeed,40, 28, "bossFast");
         tm = new Timer(bossAttackSpeed-bossAttackDelayDiff, this.handleBossAttack);
         this.bossTimers.push({id: id, timer: tm});
         */
@@ -248,6 +250,8 @@ export default class MainHW4Scene extends HW4Scene {
         this.sceneEndWinDelayer = new Timer(2000, this.sceneEnderWin);
         this.sceneEndLoseDelayer = new Timer(2000, this.sceneEnderLose);
         this.disappearTimer = new Timer(500, this.disappear);
+        this.sceneSkipTimer = new Timer(100);
+        this.sceneSkipTimer.start();
 
         // Add a UI for health
         this.addUILayer("health");
@@ -337,8 +341,11 @@ export default class MainHW4Scene extends HW4Scene {
                 break;
             }
             case PlayerEvent.CHEAT_ADVANCE_LEVEL: {
-                console.log("Cheat activated: advancing level");
-                this.handleSceneEndWin();
+                if(this.sceneSkipTimer.isStopped() && this.sceneSkipTimer.hasRun()){
+                    console.log("Cheat activated: advancing level");
+                    this.win = true;
+                    this.handleSceneEndWin();
+                }
                 break;
             }
 
@@ -360,22 +367,21 @@ export default class MainHW4Scene extends HW4Scene {
     }
 
     protected handleDodgeChargeChange(currentCharge: number, maxCharge: number, type: string): void {
-        console.log("Current: ", this.currentDodge);
-        console.log("New: ", type, currentCharge);
+
 
         // if increasing LOWER than current
         if(type === "increase" && currentCharge < this.currentDodge){
-            console.log("ignored eronous increase");
+            // console.log("ignored eronous increase");
             return; // ignore this event
         }
         // if decreasing HIGHER than current
         if(type === "decrease" && currentCharge > this.currentDodge){
-            console.log("ignored eronous decrease");
+            // console.log("ignored eronous decrease");
             return; // ignore this event
         }
 
         if(currentCharge - this.currentDodge > 1 || currentCharge - this.currentDodge < -1){
-            console.log("skipping charges");
+            // console.log("skipping charges");
             return;
         }
         
@@ -1041,6 +1047,10 @@ export default class MainHW4Scene extends HW4Scene {
             
             this.load.keepSpritesheet("player1");
             this.load.keepSpritesheet("boss");
+            this.load.keepSpritesheet("bossFast");
+            this.load.keepSpritesheet("bossHeavy");
+            this.load.keepSpritesheet("left_fist");
+            this.load.keepSpritesheet("right_fist");
 
             this.load.keepAudio("heavyAttack");
             this.load.keepAudio("lightAttack");
