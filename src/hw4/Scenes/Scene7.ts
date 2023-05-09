@@ -139,6 +139,8 @@ export default class Scene7 extends HW4Scene {
         // Add in the tilemap
         let tilemapLayers = this.add.tilemap("level");
         this.currentLevel = 7;
+        this.damageTaken = 0;
+        this.timesdodged = 0;
 
         // Get the wall layer
         this.walls = <OrthogonalTilemap>tilemapLayers[1].getItems()[0];

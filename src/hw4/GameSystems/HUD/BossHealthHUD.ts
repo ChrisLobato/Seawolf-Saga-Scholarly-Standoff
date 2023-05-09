@@ -40,7 +40,7 @@ export default class BossHealthbarHUD implements Updateable {
     protected healthBarBg: Label;
 
     protected healthLabel: Label; //Label for boss name
-
+    protected bossName;
     public constructor(scene: Scene, owner: Health & Positioned & Unique, layer: string, options: HealthBarOptions) {
         this.scene = scene;
         this.layer = layer;
@@ -63,6 +63,10 @@ export default class BossHealthbarHUD implements Updateable {
 		this.healthLabel.size.set(300, 30);
 		this.healthLabel.fontSize = 24;
 		this.healthLabel.font = "Courier";
+
+        // if(options!==undefined){
+        //     this.bossName = options.bossName;
+        // }
 
         // //Health Label
         // this.healthLabel = <Label>this.add.uiElement(UIElementType.LABEL, HW2Layers.UI, {position: new Vec2(50, 50), text: "HP "});
