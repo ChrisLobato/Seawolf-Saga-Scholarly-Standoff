@@ -9,6 +9,11 @@ import MainMenu from "./MainMenu";
 import HW4Scene from "./HW4Scene";
 import MainHW4Scene from "./MainHW4Scene";
 import Button from "../../Wolfie2D/Nodes/UIElements/Button";
+import Scene2 from "./Scene2";
+import Scene6 from "./Scene6";
+import Scene5 from "./Scene5";
+import Scene4 from "./Scene4";
+import Scene3 from "./Scene3";
 //NOTE Later on we would need to import the other levels scenes
 
 export default class LevelsScreen extends Scene {
@@ -67,7 +72,7 @@ export default class LevelsScreen extends Scene {
         level1Button.backgroundColor = Color.BLACK;
         level1Button.onClickEventId = "level 1";
         if(this.levelsCompleted<1){
-            //level1Button.visible = false;
+            level1Button.visible = false;
         }
 
         const level2Button = this.add.uiElement(UIElementType.BUTTON, "levelsScreen", {position: new Vec2(center.x, center.y - 318), text: "Level 2"});
@@ -78,7 +83,7 @@ export default class LevelsScreen extends Scene {
         level2Button.onClickEventId = "level 2";
 
         if(this.levelsCompleted<2){
-            //level2Button.visible = false;
+            level2Button.visible = false;
         }
 
         const level3Button = this.add.uiElement(UIElementType.BUTTON, "levelsScreen", {position: new Vec2(center.x+320, center.y - 318), text: "Level 3"});
@@ -88,7 +93,7 @@ export default class LevelsScreen extends Scene {
         level3Button.backgroundColor = Color.BLACK;
         level3Button.onClickEventId = "level 3";
         if(this.levelsCompleted<3){
-            //level3Button.visible = false;
+            level3Button.visible = false;
         }
 
         const level4Button = this.add.uiElement(UIElementType.BUTTON, "levelsScreen", {position: new Vec2(center.x-320, center.y+130), text: "Level 4"});
@@ -98,7 +103,7 @@ export default class LevelsScreen extends Scene {
         level4Button.backgroundColor = Color.BLACK;
         level4Button.onClickEventId = "level 4"
         if(this.levelsCompleted<4){
-            //level4Button.visible = false;
+            level4Button.visible = false;
         }
 
 
@@ -109,7 +114,7 @@ export default class LevelsScreen extends Scene {
         level5Button.backgroundColor = Color.BLACK;
         level5Button.onClickEventId = "level 5"
         if(this.levelsCompleted<5){
-            //level5Button.visible = false;
+            level5Button.visible = false;
         }
 
         const level6Button = this.add.uiElement(UIElementType.BUTTON, "levelsScreen", {position: new Vec2(center.x+320, center.y +130), text: "Final Level"});
@@ -119,7 +124,7 @@ export default class LevelsScreen extends Scene {
         level6Button.backgroundColor = Color.BLACK;
         level6Button.onClickEventId = "level 6"
         if(this.levelsCompleted<6){
-            //level6Button.visible = false;
+            level6Button.visible = false;
         }
 
         
@@ -127,6 +132,11 @@ export default class LevelsScreen extends Scene {
 
         this.receiver.subscribe("start");
         this.receiver.subscribe("level 1");
+        this.receiver.subscribe("level 2");
+        this.receiver.subscribe("level 3");
+        this.receiver.subscribe("level 4");
+        this.receiver.subscribe("level 5");
+        this.receiver.subscribe("level 6");
     }
 
     public updateScene(deltaT: number): void {
@@ -142,7 +152,22 @@ export default class LevelsScreen extends Scene {
                 break;
             case "level 1":
                 //REVISIT this is where we will need to import level 1 and switch to that
-                this.sceneManager.changeToScene(MainHW4Scene)
+                this.sceneManager.changeToScene(MainHW4Scene,{completedLevels: this.levelsCompleted},{})
+                break;
+            case "level 2":
+                this.sceneManager.changeToScene(Scene2,{completedLevels: this.levelsCompleted},{})
+                break;
+            case "level 3":
+                this.sceneManager.changeToScene(Scene3,{completedLevels: this.levelsCompleted},{})
+                break;
+            case "level 4":
+                this.sceneManager.changeToScene(Scene4,{completedLevels: this.levelsCompleted},{})
+                break;
+            case "level 5":
+                this.sceneManager.changeToScene(Scene5,{completedLevels: this.levelsCompleted},{})
+                break;
+            case "level 6":
+                this.sceneManager.changeToScene(Scene6,{completedLevels: this.levelsCompleted},{})
                 break;
         }
     }
