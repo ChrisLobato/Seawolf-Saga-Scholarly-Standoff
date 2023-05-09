@@ -22,4 +22,6 @@ export default abstract class HW4Scene extends Scene {
     public paused: boolean;    
 
     public currentLevel: number;
+    public timesdodged: number;
+    public damageTaken: number;
 }

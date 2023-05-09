@@ -44,6 +44,7 @@ import AttackActor from "../Actors/AttackActor";
 import Label from "../../Wolfie2D/Nodes/UIElements/Label";
 import { UIElementType } from "../../Wolfie2D/Nodes/UIElements/UIElementTypes";
 import Button from "../../Wolfie2D/Nodes/UIElements/Button";
+import GameOver from "./GameOver";
 
 export default class MainHW4Scene extends HW4Scene {
 
@@ -108,6 +109,8 @@ export default class MainHW4Scene extends HW4Scene {
     // Attacks
     private left_fist: AttackActor;
     private right_fist: AttackActor;
+
+    private timePassed: number = 0;
     
    
     public constructor(viewport: Viewport, sceneManager: SceneManager, renderingManager: RenderingManager, options: Record<string, any>) {
@@ -163,6 +166,8 @@ export default class MainHW4Scene extends HW4Scene {
         // Add in the tilemap
         let tilemapLayers = this.add.tilemap("level");
         this.currentLevel = 1;
+        this.damageTaken = 0;
+        this.timesdodged = 0;
         // Get the wall layer
         this.walls = <OrthogonalTilemap>tilemapLayers[1].getItems()[0];
 
@@ -268,6 +273,7 @@ export default class MainHW4Scene extends HW4Scene {
      * @see Scene.updateScene
      */
     public override updateScene(deltaT: number): void {
+        this.timePassed += deltaT;
         while (this.receiver.hasNextEvent()) {
             this.handleEvent(this.receiver.getNextEvent());
         }
@@ -383,6 +389,9 @@ export default class MainHW4Scene extends HW4Scene {
         if(currentCharge - this.currentDodge > 1 || currentCharge - this.currentDodge < -1){
             // console.log("skipping charges");
             return;
+        }
+        if(type=== "decrease"){
+            this.timesdodged++;
         }
         
         for(let i = currentCharge; i < this.DodgeIcons.length; i++ ){
@@ -629,6 +638,7 @@ export default class MainHW4Scene extends HW4Scene {
             b.position.y - (b.size.y/2) < bottom) { 
                 if (!this.godMode){
                     this.dealDamage(b, damage);
+                    this.damageTaken++;
                     //Play attack sound effect
                     this.emitter.fireEvent(GameEventType.PLAY_SOUND, {key: "veryHeavyAttack", loop: false, holdReference: false});
                 } else {
@@ -681,7 +691,7 @@ export default class MainHW4Scene extends HW4Scene {
         this.viewport.setFocus(size);
         this.viewport.setZoomLevel(1);
         this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: "bossMusic1"});
-        this.sceneManager.changeToScene(MainMenu);
+        this.sceneManager.changeToScene(GameOver,{timesDodged: this.timesdodged, damageTaken: this.damageTaken, timeSurvived: this.timePassed, completedLevels: this.currentLevel});
     }
 
 

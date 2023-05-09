@@ -44,6 +44,7 @@ import Scene7 from "./Scene7";
 import Label from "../../Wolfie2D/Nodes/UIElements/Label";
 import Button from "../../Wolfie2D/Nodes/UIElements/Button";
 import { UIElementType } from "../../Wolfie2D/Nodes/UIElements/UIElementTypes";
+import GameOver from "./GameOver";
 
 export default class Scene6 extends HW4Scene {
 
@@ -108,6 +109,8 @@ export default class Scene6 extends HW4Scene {
     // Attacks
     private left_fist: AttackActor;
     private right_fist: AttackActor;
+
+    private timePassed: number = 0;
     
    
     public constructor(viewport: Viewport, sceneManager: SceneManager, renderingManager: RenderingManager, options: Record<string, any>) {
@@ -233,6 +236,7 @@ export default class Scene6 extends HW4Scene {
      * @see Scene.updateScene
      */
     public override updateScene(deltaT: number): void {
+        this.timePassed += deltaT;
         while (this.receiver.hasNextEvent()) {
             this.handleEvent(this.receiver.getNextEvent());
         }
@@ -249,6 +253,7 @@ export default class Scene6 extends HW4Scene {
         switch (event.type) {
             case PlayerEvent.PLAYER_ATTACKED: {
                 this.handleAttack(event.data.get("player"), event.data.get("controller"), event.data.get("type"));
+                this.damageTaken++;
                 break;
             }
             case PlayerEvent.ATTACK_OVER: {
@@ -347,6 +352,9 @@ export default class Scene6 extends HW4Scene {
         if(currentCharge - this.currentDodge > 1 || currentCharge - this.currentDodge < -1){
             // console.log("skipping charges");
             return;
+        }
+        if(type=== "decrease"){
+            this.timesdodged++;
         }
         
         for(let i = currentCharge; i < this.DodgeIcons.length; i++ ){
@@ -587,6 +595,7 @@ export default class Scene6 extends HW4Scene {
             b.position.y - (b.size.y/2) < bottom) { 
                 if (!this.godMode){
                     this.dealDamage(b, damage);
+                    this.damageTaken++;
                     //Play attack sound effect
                     this.emitter.fireEvent(GameEventType.PLAY_SOUND, {key: "veryHeavyAttack", loop: false, holdReference: false});
                 } else {
@@ -639,9 +648,8 @@ export default class Scene6 extends HW4Scene {
         this.viewport.setFocus(size);
         this.viewport.setZoomLevel(1);
         this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: "bossMusic1"});
-        this.sceneManager.changeToScene(MainMenu);
+        this.sceneManager.changeToScene(GameOver,{timesDodged: this.timesdodged, damageTaken: this.damageTaken, timeSurvived: this.timePassed, completedLevels: this.currentLevel});
     }
-
 
     protected handleItemRequest(node: GameNode, inventory: Inventory): void {
         let items: Item[] = new Array<Item>(...this.healthpacks, ...this.laserguns).filter((item: Item) => {
