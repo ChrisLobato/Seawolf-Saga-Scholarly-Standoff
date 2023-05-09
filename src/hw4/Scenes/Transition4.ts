@@ -8,7 +8,10 @@ import Label from "../../Wolfie2D/Nodes/UIElements/Label";
 import GameEvent from "../../Wolfie2D/Events/GameEvent";
 import MainMenu from "./MainMenu";
 import MainHW4Scene from "./MainHW4Scene";
+import Scene2 from "./Scene2";
 import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
+import Scene4 from "./Scene4";
+import Scene8 from "./Scene8";
 
 export default class Transition1 extends Scene {
   private background: Layer;
@@ -68,15 +71,17 @@ export default class Transition1 extends Scene {
   public handleEvent(event: GameEvent): void {
     switch (event.type) {
       case "continue":
+        //Introduce evil John Script clones storyline
         const paragraphs = [
-          "The year is 20XX. You are a transfer student from Harvard,",
-          "continuing your education at Stony Brook University.",
-          "You're late to your housing appointment,",
-          "and you've been scrambling to get a spot at West Apartments.",
-          "You found one open spot, but just as you are about to click confirm,",
-          "another name takes the slot: John Script.",
-          'He sends you a taunting message: "You\'re too slow!"',
-          "It's time to pay John a visit."
+          "Beaten and battered, you stumble to a bench and sit down to rest.",
+          "The unconscious bodies of the adversaries you defeated lay scattered around you.",
+          "You finally have a moment to get a good look at them.",
+          "To your horror, you realize that they are all clones of John Script!",
+          "Every single one, a spitting image of the next.",
+          "As if things couldn't get worse,",
+          "several John Script clones emerge from the murky depths of Roth Pond.",
+          "Only Wolfie can save you now.",
+          "You rise, and flee to the stadium."
         ];
         if (this.clickCounter < paragraphs.length) {
 
@@ -108,7 +113,7 @@ export default class Transition1 extends Scene {
           }
         } else {
           this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: "transitionMusic"});
-          this.sceneManager.changeToScene(MainHW4Scene);
+          this.sceneManager.changeToScene(Scene8);
         }
         break;
     }

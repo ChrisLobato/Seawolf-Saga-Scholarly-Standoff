@@ -8,7 +8,10 @@ import Label from "../../Wolfie2D/Nodes/UIElements/Label";
 import GameEvent from "../../Wolfie2D/Events/GameEvent";
 import MainMenu from "./MainMenu";
 import MainHW4Scene from "./MainHW4Scene";
+import Scene2 from "./Scene2";
 import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
+import Scene4 from "./Scene4";
+import Scene8 from "./Scene8";
 
 export default class Transition1 extends Scene {
   private background: Layer;
@@ -23,7 +26,11 @@ export default class Transition1 extends Scene {
   }
 
   public startScene(): void {
-    this.emitter.fireEvent(GameEventType.PLAY_MUSIC, {key: "transitionMusic", loop: true, holdReference: true});
+    this.emitter.fireEvent(GameEventType.PLAY_MUSIC, {
+      key: "transitionMusic",
+      loop: true,
+      holdReference: true,
+    });
     this.clickCounter = 0;
     const center = this.viewport.getCenter();
     let size = this.viewport.getHalfSize();
@@ -68,37 +75,50 @@ export default class Transition1 extends Scene {
   public handleEvent(event: GameEvent): void {
     switch (event.type) {
       case "continue":
+        //Wolfie saves the day
         const paragraphs = [
-          "The year is 20XX. You are a transfer student from Harvard,",
-          "continuing your education at Stony Brook University.",
-          "You're late to your housing appointment,",
-          "and you've been scrambling to get a spot at West Apartments.",
-          "You found one open spot, but just as you are about to click confirm,",
-          "another name takes the slot: John Script.",
-          'He sends you a taunting message: "You\'re too slow!"',
-          "It's time to pay John a visit."
+          "The John Script clones are relentless, closing in on you.",
+          "In a moment of desperation, you cry out for help,",
+          "and just as the John Script clones are about to reach you,",
+          "a resounding howl pierces through the air:",
+          '"What\'s a Seawolf?"',
+          "From the top of the stadium, a majestic figure leaps down,",
+          "landing between you and the clones: it's Wolfie!",
+          "The John Script clones, overwhelmed by Wolfie's might,",
+          "begin to retreat, their confidence shattered.",
+          "Wolfie turns to you and says,",
+          '"You truly had to endure a Seawolf saga back there.',
+          'One might say, a scholarly standoff for the ages!"',
+          "You smile, knowing that he just said the title of the game.",
+          "Roll Credits"
         ];
         if (this.clickCounter < paragraphs.length) {
-
           // Display each line from paragraphs using clickCounter as index
-            let text = <Label>(
-                this.add.uiElement(UIElementType.LABEL, "textLayer", {
-                    position: new Vec2(this.center.x, this.center.y - 300 + this.clickCounter * 50),
-                    text: paragraphs[this.clickCounter],
-                })
-            );
-            text.textColor = Color.WHITE;
-            text.fontSize = 32;
-            text.font = "PixelSimple";
+          let text = <Label>this.add.uiElement(
+            UIElementType.LABEL,
+            "textLayer",
+            {
+              position: new Vec2(
+                this.center.x,
+                this.center.y - 400 + this.clickCounter * 50
+              ),
+              text: paragraphs[this.clickCounter],
+            }
+          );
+          text.textColor = Color.WHITE;
+          text.fontSize = 32;
+          text.font = "PixelSimple";
 
           this.clickCounter++;
 
           if (this.clickCounter === paragraphs.length) {
-            let continueButton = <Button>(
-              this.add.uiElement(UIElementType.BUTTON, "buttonLayer", {
+            let continueButton = <Button>this.add.uiElement(
+              UIElementType.BUTTON,
+              "buttonLayer",
+              {
                 position: new Vec2(this.center.x, this.center.y + 300),
-                text: "Start Level",
-              })
+                text: "I win!!!",
+              }
             );
             continueButton.size.set(300, 50);
             continueButton.borderWidth = 2;
@@ -107,8 +127,10 @@ export default class Transition1 extends Scene {
             continueButton.onClickEventId = "continue";
           }
         } else {
-          this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: "transitionMusic"});
-          this.sceneManager.changeToScene(MainHW4Scene);
+          this.emitter.fireEvent(GameEventType.STOP_SOUND, {
+            key: "transitionMusic",
+          });
+          this.sceneManager.changeToScene(MainMenu);
         }
         break;
     }

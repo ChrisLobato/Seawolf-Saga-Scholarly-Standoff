@@ -70,11 +70,13 @@ export default class Transition1 extends Scene {
     switch (event.type) {
       case "continue":
         const paragraphs = [
-          "You defeated John Script in single combat,",
-          "but as he fell, he let out a terrible cry:",
+          "Even after being ambushed by John Script,",
+          "you managed to defeat him in single combat.",
+          "But as he fell, he let out a terrible cry:",
           '"RISE AND GRIND GAMERS"',
           "You feel the ground begin to shake with the might of a thousand gamers.",
-          "You steel yourself for what may be your last stand."
+          "You steel yourself for what may be your last stand.",
+          "A figure emerges from an apartment, ready to avenge their fallen comrade."
         ];
         if (this.clickCounter < paragraphs.length) {
 

@@ -20,6 +20,7 @@ import Scene9 from "./Scene9";
 import Scene10 from "./Scene10";
 import Scene11 from "./Scene11";
 import Scene12 from "./Scene12";
+import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
 //NOTE Later on we would need to import the other levels scenes
 
 export default class LevelsScreen extends Scene {
@@ -220,6 +221,7 @@ export default class LevelsScreen extends Scene {
     }
 
     public handleEvent(event: GameEvent): void {
+        this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: "mainMenuMusic"});
         switch(event.type){
             case "start":
                 this.sceneManager.changeToScene(MainMenu,{completedLevels: this.levelsCompleted},{});

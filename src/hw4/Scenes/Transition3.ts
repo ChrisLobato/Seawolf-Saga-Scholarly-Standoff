@@ -8,7 +8,9 @@ import Label from "../../Wolfie2D/Nodes/UIElements/Label";
 import GameEvent from "../../Wolfie2D/Events/GameEvent";
 import MainMenu from "./MainMenu";
 import MainHW4Scene from "./MainHW4Scene";
+import Scene2 from "./Scene2";
 import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
+import Scene4 from "./Scene4";
 
 export default class Transition1 extends Scene {
   private background: Layer;
@@ -69,14 +71,13 @@ export default class Transition1 extends Scene {
     switch (event.type) {
       case "continue":
         const paragraphs = [
-          "The year is 20XX. You are a transfer student from Harvard,",
-          "continuing your education at Stony Brook University.",
-          "You're late to your housing appointment,",
-          "and you've been scrambling to get a spot at West Apartments.",
-          "You found one open spot, but just as you are about to click confirm,",
-          "another name takes the slot: John Script.",
-          'He sends you a taunting message: "You\'re too slow!"',
-          "It's time to pay John a visit."
+          "You flee from West Apartments, still being pursued.",
+          "Stopping for a moment at Roth Pond, you think you've lost them.",
+          "Taking this opportunity to reflect on your situation.",
+          "You realize that each of the foes that you have faced",
+          "have shared an eerie resemblance with John Script.",
+          "Suddenly, you hear the sound of footsteps behind you once more.",
+          "No rest for the weary."
         ];
         if (this.clickCounter < paragraphs.length) {
 
@@ -108,7 +109,7 @@ export default class Transition1 extends Scene {
           }
         } else {
           this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: "transitionMusic"});
-          this.sceneManager.changeToScene(MainHW4Scene);
+          this.sceneManager.changeToScene(Scene4);
         }
         break;
     }
