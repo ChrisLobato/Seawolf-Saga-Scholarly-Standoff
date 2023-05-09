@@ -8,6 +8,7 @@ import Label from "../../Wolfie2D/Nodes/UIElements/Label";
 import GameEvent from "../../Wolfie2D/Events/GameEvent";
 import MainMenu from "./MainMenu";
 import MainHW4Scene from "./MainHW4Scene";
+import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
 
 export default class Transition1 extends Scene {
   private background: Layer;
@@ -18,9 +19,11 @@ export default class Transition1 extends Scene {
 
   public loadScene() {
     this.load.image("black", "hw4_assets/sprites/black.png");
+    this.load.audio("transitionMusic", "hw4_assets/sounds/s4_transition.wav");
   }
 
   public startScene(): void {
+    this.emitter.fireEvent(GameEventType.PLAY_MUSIC, {key: "transitionMusic", loop: true, holdReference: true});
     this.clickCounter = 0;
     const center = this.viewport.getCenter();
     let size = this.viewport.getHalfSize();
@@ -103,6 +106,7 @@ export default class Transition1 extends Scene {
             continueButton.onClickEventId = "continue";
           }
         } else {
+          this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: "transitionMusic"});
           this.sceneManager.changeToScene(MainHW4Scene);
         }
         break;

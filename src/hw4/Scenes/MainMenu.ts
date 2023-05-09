@@ -110,6 +110,8 @@ export default class MainMenu extends Scene {
     public handleEvent(event: GameEvent): void {
         switch(event.type) {
             case "play": {
+                // Stop music
+                this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: "mainMenuMusic"});
                 this.sceneManager.changeToScene(Transition1,{completedLevels: this.levelsCompleted},{});
                 break;
             }

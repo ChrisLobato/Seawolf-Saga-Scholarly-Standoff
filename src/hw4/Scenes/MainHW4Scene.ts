@@ -45,6 +45,7 @@ import Label from "../../Wolfie2D/Nodes/UIElements/Label";
 import { UIElementType } from "../../Wolfie2D/Nodes/UIElements/UIElementTypes";
 import Button from "../../Wolfie2D/Nodes/UIElements/Button";
 import GameOver from "./GameOver";
+import Transition2 from "./Transition2";
 
 export default class MainHW4Scene extends HW4Scene {
 
@@ -682,7 +683,7 @@ export default class MainHW4Scene extends HW4Scene {
         this.viewport.setFocus(size);
         this.viewport.setZoomLevel(1);
         this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: "bossMusic1"});
-        this.sceneManager.changeToScene(Scene2);
+        this.sceneManager.changeToScene(Transition2);
     }
     protected handleSceneEndLose (): void {
         // recentering the viewport
