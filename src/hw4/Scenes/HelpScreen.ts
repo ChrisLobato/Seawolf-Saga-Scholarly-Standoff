@@ -26,7 +26,6 @@ export default class HelpScreen extends Scene {
         if(options!== undefined){
             this.levelsCompleted = options.completedLevels;
         }
-        
     }
 
     public startScene(): void {

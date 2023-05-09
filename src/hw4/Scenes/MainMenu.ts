@@ -9,6 +9,7 @@ import HelpScreen from "./HelpScreen";
 import ControlsScreen from "./ControlsScreen";
 import LevelsScreen from "./LevelsScreen";
 import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
+import Transition1 from "./Transition1";
 
 
 export default class MainMenu extends Scene {
@@ -109,7 +110,7 @@ export default class MainMenu extends Scene {
     public handleEvent(event: GameEvent): void {
         switch(event.type) {
             case "play": {
-                this.sceneManager.changeToScene(MainHW4Scene,{completedLevels: this.levelsCompleted},{});
+                this.sceneManager.changeToScene(Transition1,{completedLevels: this.levelsCompleted},{});
                 break;
             }
             case "level select": {
