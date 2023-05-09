@@ -873,7 +873,7 @@ export default class Scene8 extends HW4Scene {
         boss.navkey = "navmesh";
         // Give the NPC a healthbar
         let healthbar = new HealthbarHUD(this, boss, "primary", {size: boss.size.clone().scaled(2, 1/2), offset: boss.size.clone().scaled(0, -1/2)});
-        let BossHealthBar = new BossHealthbarHUD(this,boss, "primary", {size: boss.size.clone().scaled(2, 1/2), offset: boss.size.clone().scaled(0, -1/2)},"Random Guys friend");
+        let BossHealthBar = new BossHealthbarHUD(this,boss, "primary", {size: boss.size.clone().scaled(2, 1/2), offset: boss.size.clone().scaled(0, -1/2)},"Giovanni Scripelli");
         this.bossHealth = BossHealthBar;
         this.healthbars.set(boss.id, healthbar);
 
