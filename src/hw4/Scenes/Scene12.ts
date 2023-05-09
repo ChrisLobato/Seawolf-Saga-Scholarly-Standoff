@@ -20,7 +20,7 @@ import PlayerActor from "../Actors/PlayerActor";
 import GuardBehavior from "../AI/NPC/NPCBehavior/GaurdBehavior";
 import PlayerAI from "../AI/Player/PlayerAI";
 import PlayerController from "../AI/Player/PlayerController";
-import { ItemEvent, PlayerEvent, BattlerEvent, BossEvent, SceneEvents } from "../Events";
+import { ItemEvent, PlayerEvent, BattlerEvent, BossEvent, SceneEvents, HudEvent } from "../Events";
 import Battler from "../GameSystems/BattleSystem/Battler";
 import BattlerBase from "../GameSystems/BattleSystem/BattlerBase";
 import HealthbarHUD from "../GameSystems/HUD/HealthbarHUD";
@@ -40,6 +40,9 @@ import PlayerHealthHUD from "../GameSystems/HUD/PlayerHealthHUD";
 import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
 import BossHealthbarHUD from "../GameSystems/HUD/BossHealthHUD";
 import AttackActor from "../Actors/AttackActor";
+import Label from "../../Wolfie2D/Nodes/UIElements/Label";
+import Button from "../../Wolfie2D/Nodes/UIElements/Button";
+import { UIElementType } from "../../Wolfie2D/Nodes/UIElements/UIElementTypes";
 
 export default class Scene12 extends HW4Scene {
 
@@ -79,6 +82,11 @@ export default class Scene12 extends HW4Scene {
 
     // The position graph for the navmesh
     private graph: PositionGraph;
+    // Graphics for Pause Menu
+    protected pauseScreen: Rect;
+    protected pauseLabel: Label;
+    protected pauseButton: Button;
+    protected resumeButton: Button;
 
     private attackMarker: Graphic;
     private attackMarker2: Graphic;
@@ -128,7 +136,7 @@ export default class Scene12 extends HW4Scene {
     public override startScene() {
         // Add in the tilemap
         let tilemapLayers = this.add.tilemap("level");
-
+        this.currentLevel = 12;
         // Get the wall layer
         this.walls = <OrthogonalTilemap>tilemapLayers[1].getItems()[0];
 
@@ -139,6 +147,33 @@ export default class Scene12 extends HW4Scene {
         this.viewport.setZoomLevel(3);
 
         this.initLayers();
+        //init the pause Menu Shtuff REVISIT To move maybe into a function in HW4Scene.ts so everything inherits it
+        let menuLayer = this.addUILayer("Pause Menu");
+        menuLayer.setDepth(100);
+        this.pauseScreen = <Rect>this.add.graphic(GraphicType.RECT, "Pause Menu", { position: new Vec2(this.viewport.getCenter().x, this.viewport.getCenter().y), size: new Vec2(4000, 4000) });
+        this.pauseScreen.setColor(Color.BLACK);
+        this.pauseScreen.alpha = 0;
+        this.pauseScreen.visible = false;
+        this.pauseLabel = <Label>this.add.uiElement(UIElementType.LABEL,"Pause Menu", {position: new Vec2(this.getViewport().getCenter().x, this.getViewport().getCenter().y),text: "GAME PAUSED"});
+        this.pauseLabel.size.set(200,30);
+        this.pauseLabel.fontSize = 30;
+        this.pauseLabel.font = "Courier";
+        this.pauseLabel.setTextColor(Color.WHITE);
+        this.pauseLabel.visible = false;
+        this.pauseButton = <Button>this.add.uiElement(UIElementType.BUTTON,"Pause Menu",{position: new Vec2(this.getViewport().getCenter().x, this.getViewport().getCenter().y), text: "Main Menu"})
+        this.pauseButton.size.set(200,100);
+        this.pauseButton.borderWidth = 2;
+        this.pauseButton.borderColor = Color.WHITE;
+        this.pauseButton.backgroundColor =Color.TRANSPARENT;
+        this.pauseButton.onClickEventId = "Main Menu";
+        this.pauseButton.visible = false;
+        this.resumeButton = <Button>this.add.uiElement(UIElementType.BUTTON,"Pause Menu",{position: new Vec2(this.getViewport().getCenter().x, this.getViewport().getCenter().y), text: "Resume"})
+        this.resumeButton.size.set(200,100);
+        this.resumeButton.borderWidth = 2;
+        this.resumeButton.borderColor = Color.WHITE;
+        this.resumeButton.backgroundColor =Color.TRANSPARENT;
+        this.resumeButton.onClickEventId = HudEvent.PAUSE_MENU_START;
+        this.resumeButton.visible = false;
         
         this.initializePlayer();
         this.initializeNavmesh();
@@ -197,6 +232,8 @@ export default class Scene12 extends HW4Scene {
         // Cheat Events
         this.receiver.subscribe(PlayerEvent.CHEAT_GOD_MODE);
         this.receiver.subscribe(PlayerEvent.CHEAT_ADVANCE_LEVEL);
+        this.receiver.subscribe(HudEvent.PAUSE_MENU_START);
+        this.receiver.subscribe("Main Menu"); //this is what we want to listen for when we go back to main menu
 
         this.sceneEndWinDelayer = new Timer(2000, this.sceneEnderWin);
         this.sceneEndLoseDelayer = new Timer(2000, this.sceneEnderLose);
@@ -299,6 +336,17 @@ export default class Scene12 extends HW4Scene {
                 }
                 break;
             }
+            case HudEvent.PAUSE_MENU_START:{
+                this.handlePauseMenu();
+                break;
+            }
+            case "Main Menu":{
+                console.log("About to handle Main Menu"); //goes through this case after the main menu button has been pressed in the pause menu
+                this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: "bossMusic1"});
+                this.sceneManager.changeToScene(MainMenu,{completedLevels: this.currentLevel},{});
+
+                break;
+            }
             default: {
                 throw new Error(`Unhandled event type "${event.type}" caught in SeawolfSaga event handler`);
             }
@@ -337,6 +385,67 @@ export default class Scene12 extends HW4Scene {
     
     protected handleDodgeOver(): void {
         //REVISIT
+    }
+    protected handlePauseMenu(): void {
+        //This will handle loading and bringing up the pause menu
+        console.log("Pause menu triggered");
+        this.paused = !this.paused;
+        //Create or make visible a Button that is tied to the pause boolean
+        //create a rect this.levelTra
+        let center = this.viewport.getCenter();
+        this.player.positionX;
+        this.player.positionY;
+        if(this.paused){
+            //If this is paused
+            let primaryLayer = this.getLayer("primary");
+            this.pauseScreen.visible = true;
+            this.pauseScreen.alpha = 0.4;
+            this.pauseLabel.positionX = 0+175;
+            this.pauseLabel.positionY = 0+100;
+            
+            this.pauseLabel.visible = true;
+            this.pauseButton.positionX = 0+175;
+            this.pauseButton.positionY = 0+150;
+            this.pauseButton.scale = new Vec2(.35,.35)
+            this.resumeButton.positionX = 0+175;
+            this.resumeButton.positionY = 0+200;
+            this.resumeButton.size.set(200,100);
+            this.resumeButton.scale= new Vec2(.35,.35)
+            this.pauseButton.visible = true;
+            this.resumeButton.visible = true;
+            
+            //primaryLayer.disable(); might not need to disable because we are going to freeze everything
+            this.player.freeze();
+            this.player.aiActive = false;   //disables player click attack so we can click buttons
+
+            for(let i = 0; i < this.battlers.length; i++){
+                this.battlers[i].freeze();
+                //this.battlers[i].battlerActive = false; // REVISIT right now its deactivating the battlers
+                if(this.battlers[i]!== this.player){
+                    this.battlers[i].aiActive = false;
+                }
+            }
+
+        }
+        else{
+            let primaryLayer = this.getLayer("primary");
+            //primaryLayer.enable();
+            this.pauseScreen.visible = false;
+            this.pauseScreen.alpha = 0;
+            this.pauseLabel.visible = false;
+            this.pauseButton.visible = false;
+            this.resumeButton.visible = false;
+            
+            this.player.unfreeze();
+            this.player.aiActive = true;
+            for(let i = 0;i < this.battlers.length;i++){
+                if(this.battlers[i] !== this.player){}
+                this.battlers[i].unfreeze();    //if enemies are added to battlers list then this should catch them all
+                //this.battlers[i].battlerActive = true;
+                this.battlers[i].aiActive = true;
+            }
+
+        }
     }
 
 
